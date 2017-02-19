@@ -37,8 +37,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // GridLayout
-        TextView gridView = (TextView) findViewById(R.id.Layout3);
-        gridView.setOnClickListener(new View.OnClickListener(){
+        TextView gridViewItem = (TextView) findViewById(R.id.Layout3);
+        gridViewItem.setOnClickListener(new View.OnClickListener(){
 
             @Override
             public void onClick(View v) {
