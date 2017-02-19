@@ -1,3 +1,16 @@
 <resources>
-    <string name="app_name">Mobile-Development-Projects</string>
+    <string name="app_name">HW 5 - Android UI</string>
+    <string name="main_link_1">Linear Vertical</string>
+    <string name="main_link_2">Linear Horizontal</string>
+    <string name="main_link_3">Grid</string>
+    <string name="main_link_4">Relative</string>
+    <string name="cell_1">Item 1</string>
+    <string name="cell_2">Item 2</string>
+    <string name="cell_3">Item 3</string>
+    <string name="cell_4">Item 4</string>
+    <string name="cell_5">Item 5</string>
+    <string name="cell_6">Item 6</string>
+    <string name="cell_7">Item 7</string>
+    <string name="cell_8">Item 8</string>
+    <string name="cell_9">Item 9</string>
 </resources>

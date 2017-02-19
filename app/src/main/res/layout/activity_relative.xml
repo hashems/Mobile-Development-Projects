@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_relative"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="hashems.mobile_development_projects.GridViewActivity">
+
+    <TextView
+        android:id="@+id/item1"
+        android:text="@string/cell_1"
+        android:layout_margin="5dp"
+        android:textSize="25sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/item2"
+        android:text="@string/cell_2"
+        android:layout_margin="5dp"
+        android:textSize="25sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/item1" />
+
+    <TextView
+        android:id="@+id/item3"
+        android:text="@string/cell_3"
+        android:layout_margin="5dp"
+        android:textSize="25sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/item1" />
+
+    <TextView
+        android:id="@+id/item4"
+        android:text="@string/cell_4"
+        android:layout_margin="5dp"
+        android:textSize="25sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/item3"
+        android:layout_toRightOf="@+id/item2" />
+
+    <TextView
+        android:id="@+id/item5"
+        android:text="@string/cell_5"
+        android:layout_margin="5dp"
+        android:textSize="25sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/item3" />
+
+    <TextView
+        android:id="@+id/item6"
+        android:text="@string/cell_6"
+        android:layout_margin="5dp"
+        android:textSize="25sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/item5"
+        android:layout_toRightOf="@+id/item4" />
+
+    <TextView
+        android:id="@+id/item7"
+        android:text="@string/cell_7"
+        android:layout_margin="5dp"
+        android:textSize="25sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/item5" />
+
+    <TextView
+        android:id="@+id/item8"
+        android:text="@string/cell_8"
+        android:layout_margin="5dp"
+        android:textSize="25sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/item7"
+        android:layout_toRightOf="@+id/item6" />
+
+    <TextView
+        android:id="@+id/item9"
+        android:text="@string/cell_9"
+        android:layout_margin="5dp"
+        android:textSize="25sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true" />
+</RelativeLayout>
