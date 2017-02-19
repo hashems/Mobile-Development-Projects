@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">HW 5 - Android UI</string>
+    <string name="app_name">Hello, Android! It\'s me, UI!</string>
     <string name="main_link_1">Linear Vertical</string>
     <string name="main_link_2">Linear Horizontal</string>
     <string name="main_link_3">Grid</string>

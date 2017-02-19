@@ -6,6 +6,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.TextView;
 
+// CITE: CS 496 Week 6 Content (various)
+// CITE: https://developer.android.com/index.html (various)
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -15,8 +18,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // LinearLayout Vertical
-        TextView listViewV = (TextView) findViewById(R.id.Layout1);
-        listViewV.setOnClickListener(new View.OnClickListener(){
+        TextView listViewItem = (TextView) findViewById(R.id.Layout1);
+        listViewItem.setOnClickListener(new View.OnClickListener(){
 
             @Override
             public void onClick(View v) {

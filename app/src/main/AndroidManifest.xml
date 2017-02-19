@@ -15,6 +15,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".ListViewVActivity" >
+        </activity>
+        <activity android:name=".ListViewHActivity" >
+        </activity>
+        <activity android:name=".GridViewActivity" >
+        </activity>
+        <activity android:name=".RelativeViewActivity" >
+        </activity>
     </application>
 
 </manifest>

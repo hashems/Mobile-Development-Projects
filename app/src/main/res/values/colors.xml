@@ -4,4 +4,8 @@
     <color name="colorPrimaryStatusBar">#000000</color>
     <color name="colorTextPrimary">#ffffff</color>
     <color name="colorAccent">#fffbab</color>
+    <color name="verticalPrimary">#3d3fbc</color>
+    <color name="horizontalPrimary">#42a439</color>
+    <color name="gridPrimary">#f49301</color>
+    <color name="relativePrimary">#ff0000</color>
 </resources>
