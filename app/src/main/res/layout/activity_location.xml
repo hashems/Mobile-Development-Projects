@@ -1,23 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_main"
+    android:id="@+id/activity_location"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="hashems.mobile_development_projects.MainActivity">
+    tools:context="hashems.mobile_development_projects.LocationActivity">
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello Location!" />
-
-    <TextView
-        android:id="@+id/debugTextView"
+        android:id="@+id/Latitude"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="40sp" />
-</RelativeLayout>
+
+    <TextView
+        android:id="@+id/Longitude"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="40sp" />
+
+    <!--<TextView-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:textSize="40sp"-->
+        <!--android:textColor="@color/colorTextGranted"-->
+        <!--android:text="Permission Granted!" />-->
+
+    <!--<TextView-->
+        <!--android:id="@+id/MainLayout"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:textSize="40sp"-->
+        <!--android:textColor="@color/colorTextDenied"-->
+        <!--android:text="Permission Denied!" />-->
+
+    <!--<TextView-->
+        <!--android:id="@+id/debugTextView"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:textSize="40sp" />-->
+</LinearLayout>

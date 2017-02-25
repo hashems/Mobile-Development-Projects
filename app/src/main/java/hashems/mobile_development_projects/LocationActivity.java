@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -24,7 +25,14 @@ public class LocationActivity extends AppCompatActivity implements
         ConnectionCallbacks, OnConnectionFailedListener {
 
     private GoogleApiClient mGoogleApiClient;
+
     private TextView debug;
+    private TextView latitude;
+    private TextView longitude;
+
+    private LocationRequest mLocationRequest;
+    private Location mLastLocation;
+    private LocationListener mLocationListener;
 
     // Hardcoded value used to "identify" permissions requests for location
     private static final int LOCATION_PERMISSION_RESULT = 29;
@@ -32,7 +40,7 @@ public class LocationActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_location);
+        setContentView(R.layout.activity_location);
         if(mGoogleApiClient == null) {
             mGoogleApiClient = new GoogleApiClient.Builder(this)
                     .addConnectionCallbacks(this)
@@ -40,14 +48,36 @@ public class LocationActivity extends AppCompatActivity implements
                     .addApi(LocationServices.API)
                     .build();
         }
+
+        latitude = (TextView) findViewById(R.id.Latitude);
+        longitude = (TextView) findViewById(R.id.Longitude);
+
+        // DEBUG
+        latitude.setText("Let's Location!");
+
+        mLocationRequest = LocationRequest.create();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setInterval(5000);
+        mLocationRequest.setFastestInterval(5000);
+
+        mLocationListener = new LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {
+                if (location != null) {
+                    latitude.setText(String.valueOf(location.getLatitude()));
+                    longitude.setText(String.valueOf(location.getLongitude()));
+                } else {
+                    latitude.setText("No Location Available");
+                }
+            }
+        };
     }
 
 
-    @Override
+//    @Override
     protected void onStart() {
         mGoogleApiClient.connect();
-        setContentView(R.layout.activity_location);
-        debug = (TextView) findViewById(R.id.debugTextView);
+        latitude.setText("Let's Location!");
         super.onStart();
     }
 
@@ -59,13 +89,11 @@ public class LocationActivity extends AppCompatActivity implements
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        // DEBUG
-//        setContentView(R.layout.activity_location);
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+        if(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION_RESULT);
             setContentView(R.layout.activity_denied);
+            latitude.setText("Permission Denied!");
             return;
         }
 
@@ -87,7 +115,20 @@ public class LocationActivity extends AppCompatActivity implements
     }
 
     public void updateLocation() {
-        setContentView(R.layout.activity_location);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+
+        if(mLastLocation != null) {
+            latitude.setText(String.valueOf(mLastLocation.getLatitude()));
+            longitude.setText(String.valueOf(mLastLocation.getLongitude()));
+        }
+        else {
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,mLocationRequest,mLocationListener);
+        }
     }
 
     @Override
