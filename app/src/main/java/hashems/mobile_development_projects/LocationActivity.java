@@ -42,10 +42,12 @@ public class LocationActivity extends AppCompatActivity implements
         }
     }
 
+
     @Override
     protected void onStart() {
         mGoogleApiClient.connect();
-        debug.setText("Location Activity Started");
+        setContentView(R.layout.activity_location);
+        debug = (TextView) findViewById(R.id.debugTextView);
         super.onStart();
     }
 
