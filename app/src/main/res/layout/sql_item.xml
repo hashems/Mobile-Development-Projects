@@ -1,29 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_main"
+    android:id="@+id/sql_results_item"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:orientation="vertical"
-    tools:context="hashems.mobile_development_projects.MainActivity">
+    android:orientation="horizontal"
+    tools:context="hashems.mobile_development_projects.LocationActivity">
 
     <TextView
-        android:id="@+id/Intro"
+        android:id="@+id/s_results_input"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="40sp"
-        android:text="@string/intro" />
+        android:layout_weight="1"
+        android:textSize="25sp" />
 
-    <Button
-        android:id="@+id/Start"
+    <TextView
+        android:id="@+id/s_results_lat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="30sp"
-        android:background="@color/colorButton"
-        android:textColor="@color/colorPrimaryText"
-        android:text="@string/start" />
+        android:layout_weight="1"
+        android:textSize="25sp" />
+
+    <TextView
+        android:id="@+id/s_results_long"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textSize="25sp" />
 </LinearLayout>

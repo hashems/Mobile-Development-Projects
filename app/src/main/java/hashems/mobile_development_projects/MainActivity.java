@@ -13,7 +13,7 @@ import static android.R.id.input;
 
 public class MainActivity extends AppCompatActivity {
 
-    private EditText input;
+//    private EditText input;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Location
 //        TextView listViewItem = (TextView) findViewById(R.id.MainLayout);
-//        listViewItem.setOnClickListener(new View.OnClickListener(){
+//        listViewItem.setOnClickListener(new View.OnClickListener() {
 //
 //            @Override
 //            public void onClick(View v) {
@@ -30,18 +30,16 @@ public class MainActivity extends AppCompatActivity {
 //                startActivity(intent);
 //            }
 //        });
+//    }
 
         // Input and Location
-        input = (EditText) findViewById(R.id.Input);
-
-        Button button = (Button) findViewById(R.id.Submit);
+////        input = (EditText) findViewById(R.id.Input);
+//
+        Button button = (Button) findViewById(R.id.Start);
         button.setOnClickListener(new View.OnClickListener(){
-
             @Override
             public void onClick(View v) {
-                String userInput = input.getText().toString();
                 Intent intent = new Intent(MainActivity.this, LocationActivity.class);
-                intent.putExtra("userInput", userInput);
                 startActivity(intent);
             }
         });

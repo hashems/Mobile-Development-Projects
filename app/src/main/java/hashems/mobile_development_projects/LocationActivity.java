@@ -20,6 +20,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -53,7 +54,6 @@ public class LocationActivity extends AppCompatActivity implements
     SimpleCursorAdapter mSQLCursorAdapter;
     SQLiteDatabase mSQLDB;
 
-
     // Hardcoded value used to "identify" permissions requests for location
     private static final int LOCATION_PERMISSION_RESULT = 29;
 
@@ -61,6 +61,14 @@ public class LocationActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_location);
+
+        latitude = (TextView) findViewById(R.id.Latitude);
+        longitude = (TextView) findViewById(R.id.Longitude);
+
+        mLocationRequest = LocationRequest.create();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setInterval(5000);
+        mLocationRequest.setFastestInterval(5000);
 
         mSQLiteLocation = new SQLiteLocation(this);
         mSQLDB = mSQLiteLocation.getWritableDatabase();
@@ -73,37 +81,70 @@ public class LocationActivity extends AppCompatActivity implements
                     .build();
         }
 
-//        input_prompt = (TextView) findViewById(R.id.Prompt);
-//        input = (EditText) findViewById(R.id.Input);
-        output = (TextView) findViewById(R.id.Output);
-        latitude = (TextView) findViewById(R.id.Latitude);
-        longitude = (TextView) findViewById(R.id.Longitude);
-
-//        input_prompt.setText(R.string.input_prompt);
-        // Print user input entered in Main Activity
-        Bundle extras = getIntent().getExtras();
-        String input = extras.getString("userInput");
-        output.setText(input);
-        latitude.setText(getString(R.string.connected));
-
-        mLocationRequest = LocationRequest.create();
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        mLocationRequest.setInterval(5000);
-        mLocationRequest.setFastestInterval(5000);
-
         mLocationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
                 if (location != null) {
-                    String latitude_output = getString(R.string.latitude_string) + " " + String.valueOf(location.getLatitude());
-                    String longitude_output = getString(R.string.longitude_string) + " " + String.valueOf(location.getLongitude());
-                    latitude.setText(latitude_output);
-                    longitude.setText(longitude_output);
+//                            String latitude_output = getString(R.string.latitude_string) + " " + String.valueOf(location.getLatitude());
+//                            String longitude_output = getString(R.string.longitude_string) + " " + String.valueOf(location.getLongitude());
+                    latitude.setText(String.valueOf(location.getLatitude()));
+                    longitude.setText(String.valueOf(location.getLongitude()));
                 } else {
                     latitude.setText(getString(R.string.location_unavailable));
                 }
             }
         };
+
+        Button button = (Button) findViewById(R.id.s_button);
+        button.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+                if(mSQLDB != null){
+                    ContentValues values = new ContentValues();
+                    values.put(DBContract.LocationTable.COLUMN_NAME_INPUT_STRING, ((EditText) findViewById(R.id.s_input)).getText().toString());
+                    values.put(DBContract.LocationTable.COLUMN_NAME_LAT_STRING, ((TextView) findViewById(R.id.Latitude)).getText().toString());
+                    values.put(DBContract.LocationTable.COLUMN_NAME_LONG_STRING, ((TextView) findViewById(R.id.Longitude)).getText().toString());
+                    mSQLDB.insert(DBContract.LocationTable.TABLE_NAME, null, values);
+                    populateTable();
+                }
+                else {
+                    latitude.setText("Database Inaccessible!");
+                }
+            }
+        });
+
+//        input_prompt = (TextView) findViewById(R.id.Prompt);
+//        input = (EditText) findViewById(R.id.Input);
+//        output = (TextView) findViewById(R.id.Output);
+//        latitude = (TextView) findViewById(R.id.Latitude);
+//        longitude = (TextView) findViewById(R.id.Longitude);
+
+//        input_prompt.setText(R.string.input_prompt);
+        // Print user input entered in Main Activity
+//        Bundle extras = getIntent().getExtras();
+//        String input = extras.getString("userInput");
+//        output.setText(input);
+//        latitude.setText(getString(R.string.connected));
+
+//        mLocationRequest = LocationRequest.create();
+//        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+//        mLocationRequest.setInterval(5000);
+//        mLocationRequest.setFastestInterval(5000);
+//
+//        mLocationListener = new LocationListener() {
+//            @Override
+//            public void onLocationChanged(Location location) {
+//                if (location != null) {
+//                    String latitude_output = getString(R.string.latitude_string) + " " + String.valueOf(location.getLatitude());
+//                    String longitude_output = getString(R.string.longitude_string) + " " + String.valueOf(location.getLongitude());
+//                    latitude.setText(latitude_output);
+//                    longitude.setText(longitude_output);
+//                } else {
+//                    latitude.setText(getString(R.string.location_unavailable));
+//                }
+//            }
+//        };
 
 //        Button button = (Button)findViewById(R.id.submit);
 //        button.setOnClickListener(new View.OnClickListener() {
@@ -116,7 +157,7 @@ public class LocationActivity extends AppCompatActivity implements
     @Override
     protected void onStart() {
         mGoogleApiClient.connect();
-        latitude.setText(getString(R.string.connected));
+//        latitude.setText(getString(R.string.connected));
         super.onStart();
     }
 
@@ -133,13 +174,25 @@ public class LocationActivity extends AppCompatActivity implements
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION_RESULT);
 //            latitude.setText(getString(R.string.permission_denied));
             // Set OSU coordinates if permission denied
-            Bundle extras = getIntent().getExtras();
-            String input = extras.getString("userInput");
-            output.setText(input);
-            String latitude_output = getString(R.string.latitude_string) + " " + getString(R.string.default_lat);
-            String longitude_output = getString(R.string.longitude_string) + " " + getString(R.string.default_long);
-            latitude.setText(latitude_output);
-            longitude.setText(longitude_output);
+//            Bundle extras = getIntent().getExtras();
+//            String input = extras.getString("userInput");
+//            output.setText(input);
+//            String latitude_output = getString(R.string.latitude_string) + " " + getString(R.string.default_lat);
+//            String longitude_output = getString(R.string.longitude_string) + " " + getString(R.string.default_long);
+            latitude.setText(getString(R.string.default_lat));
+            longitude.setText(getString(R.string.default_long));
+
+            if(mSQLDB != null){
+                ContentValues values = new ContentValues();
+                values.put(DBContract.LocationTable.COLUMN_NAME_INPUT_STRING, ((EditText) findViewById(R.id.s_input)).getText().toString());
+                values.put(DBContract.LocationTable.COLUMN_NAME_LAT_STRING, ((TextView) findViewById(R.id.Latitude)).getText().toString());
+                values.put(DBContract.LocationTable.COLUMN_NAME_LONG_STRING, ((TextView) findViewById(R.id.Longitude)).getText().toString());
+                mSQLDB.insert(DBContract.LocationTable.TABLE_NAME, null, values);
+                populateTable();
+            }
+            else {
+                latitude.setText("Database Inaccessible!");
+            }
             return;
         }
 
@@ -185,12 +238,35 @@ public class LocationActivity extends AppCompatActivity implements
                         mSQLCursorAdapter.getCursor().close();
                     }
                 }
-                mSQLCursor = mSQLDB.query(DBContract.LocationTable.TABLE_NAME, new String[]{DBContract.LocationTable._ID,
-                        DBContract.LocationTable.COLUMN_NAME_INPUT_STRING, DBContract.LocationTable.COLUMN_NAME_LAT_STRING,
-                        DBContract.LocationTable.COLUMN_NAME_LONG_STRING}, null, null, null, null, null);
+                mSQLCursor = mSQLDB.query(DBContract.LocationTable.TABLE_NAME,
+//                        new String[]{DBContract.LocationTable._ID,
+//                            DBContract.LocationTable.COLUMN_NAME_INPUT_STRING, DBContract.LocationTable.COLUMN_NAME_LAT_STRING,
+//                            DBContract.LocationTable.COLUMN_NAME_LONG_STRING},
+//                        DBContract.LocationTable.COLUMN_NAME_INPUT_STRING + "<> ?",
+//                        new String[]{""},
+//                        null,
+//                        null,
+//                        null);
+                        new String[]{DBContract.LocationTable._ID,
+                                DBContract.LocationTable.COLUMN_NAME_INPUT_STRING, DBContract.LocationTable.COLUMN_NAME_LAT_STRING,
+                                DBContract.LocationTable.COLUMN_NAME_LONG_STRING},
+                        null,
+                        null,
+                        null,
+                        null,
+                        null);
+
+                ListView SQLiteListView = (ListView) findViewById(R.id.s_results);
+                mSQLCursorAdapter = new SimpleCursorAdapter(this,
+                        R.layout.sql_item,
+                        mSQLCursor,
+                        new String[]{DBContract.LocationTable.COLUMN_NAME_INPUT_STRING, DBContract.LocationTable.COLUMN_NAME_LAT_STRING, DBContract.LocationTable.COLUMN_NAME_LONG_STRING},
+                        new int[]{R.id.s_results_input, R.id.s_results_lat, R.id.s_results_long},
+                        0);
+                SQLiteListView.setAdapter(mSQLCursorAdapter);
             }
             catch (Exception e) {
-                latitude.setText("SQLite error!");
+                latitude.setText("SQLite load data error!");
             }
         }
     }
@@ -204,6 +280,9 @@ class SQLiteLocation extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        // DEBUG
+        db.execSQL(DBContract.LocationTable.SQL_DROP_TABLE);
+
         db.execSQL(DBContract.LocationTable.SQL_CREATE_TABLE);
 
         // DEBUG
