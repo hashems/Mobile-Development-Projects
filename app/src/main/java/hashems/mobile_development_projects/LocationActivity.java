@@ -31,19 +31,13 @@ import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListe
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.vision.text.Text;
 
 public class LocationActivity extends AppCompatActivity implements
         ConnectionCallbacks, OnConnectionFailedListener {
 
     private GoogleApiClient mGoogleApiClient;
 
-    //    private TextView input_prompt;
-//    private EditText input;
-    private TextView output;            // DEBUG
-    //    private TextView latitude_prompt;   // DEBUG
     private TextView latitude;
-    //    private TextView longitude_prompt;  // DEBUG
     private TextView longitude;
 
     private LocationRequest mLocationRequest;
@@ -85,12 +79,8 @@ public class LocationActivity extends AppCompatActivity implements
             @Override
             public void onLocationChanged(Location location) {
                 if (location != null) {
-//                            String latitude_output = getString(R.string.latitude_string) + " " + String.valueOf(location.getLatitude());
-//                            String longitude_output = getString(R.string.longitude_string) + " " + String.valueOf(location.getLongitude());
                     latitude.setText(String.valueOf(location.getLatitude()));
                     longitude.setText(String.valueOf(location.getLongitude()));
-                } else {
-                    latitude.setText(getString(R.string.location_unavailable));
                 }
             }
         };
@@ -108,56 +98,13 @@ public class LocationActivity extends AppCompatActivity implements
                     mSQLDB.insert(DBContract.LocationTable.TABLE_NAME, null, values);
                     populateTable();
                 }
-                else {
-                    latitude.setText("Database Inaccessible!");
-                }
             }
         });
-
-//        input_prompt = (TextView) findViewById(R.id.Prompt);
-//        input = (EditText) findViewById(R.id.Input);
-//        output = (TextView) findViewById(R.id.Output);
-//        latitude = (TextView) findViewById(R.id.Latitude);
-//        longitude = (TextView) findViewById(R.id.Longitude);
-
-//        input_prompt.setText(R.string.input_prompt);
-        // Print user input entered in Main Activity
-//        Bundle extras = getIntent().getExtras();
-//        String input = extras.getString("userInput");
-//        output.setText(input);
-//        latitude.setText(getString(R.string.connected));
-
-//        mLocationRequest = LocationRequest.create();
-//        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-//        mLocationRequest.setInterval(5000);
-//        mLocationRequest.setFastestInterval(5000);
-//
-//        mLocationListener = new LocationListener() {
-//            @Override
-//            public void onLocationChanged(Location location) {
-//                if (location != null) {
-//                    String latitude_output = getString(R.string.latitude_string) + " " + String.valueOf(location.getLatitude());
-//                    String longitude_output = getString(R.string.longitude_string) + " " + String.valueOf(location.getLongitude());
-//                    latitude.setText(latitude_output);
-//                    longitude.setText(longitude_output);
-//                } else {
-//                    latitude.setText(getString(R.string.location_unavailable));
-//                }
-//            }
-//        };
-
-//        Button button = (Button)findViewById(R.id.submit);
-//        button.setOnClickListener(new View.OnClickListener() {
-//          @Override
-//          public void onClick(View v) {
-//          }
-//        }
     }
 
     @Override
     protected void onStart() {
         mGoogleApiClient.connect();
-//        latitude.setText(getString(R.string.connected));
         super.onStart();
     }
 
@@ -172,13 +119,8 @@ public class LocationActivity extends AppCompatActivity implements
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION_RESULT);
-//            latitude.setText(getString(R.string.permission_denied));
-            // Set OSU coordinates if permission denied
-//            Bundle extras = getIntent().getExtras();
-//            String input = extras.getString("userInput");
-//            output.setText(input);
-//            String latitude_output = getString(R.string.latitude_string) + " " + getString(R.string.default_lat);
-//            String longitude_output = getString(R.string.longitude_string) + " " + getString(R.string.default_long);
+
+            // Set OSU cooridinates if location permission denied
             latitude.setText(getString(R.string.default_lat));
             longitude.setText(getString(R.string.default_long));
 
@@ -189,9 +131,6 @@ public class LocationActivity extends AppCompatActivity implements
                 values.put(DBContract.LocationTable.COLUMN_NAME_LONG_STRING, ((TextView) findViewById(R.id.Longitude)).getText().toString());
                 mSQLDB.insert(DBContract.LocationTable.TABLE_NAME, null, values);
                 populateTable();
-            }
-            else {
-                latitude.setText("Database Inaccessible!");
             }
             return;
         }
@@ -216,6 +155,10 @@ public class LocationActivity extends AppCompatActivity implements
     public void updateLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            // Set OSU cooridinates if location permission denied
+            latitude.setText(getString(R.string.default_lat));
+            longitude.setText(getString(R.string.default_long));
             return;
         }
 
@@ -229,7 +172,7 @@ public class LocationActivity extends AppCompatActivity implements
     }
 
 
-    // SQLite stuff...
+    // SQLite database setup
     private void populateTable() {
         if (mSQLDB != null) {
             try {
@@ -239,14 +182,6 @@ public class LocationActivity extends AppCompatActivity implements
                     }
                 }
                 mSQLCursor = mSQLDB.query(DBContract.LocationTable.TABLE_NAME,
-//                        new String[]{DBContract.LocationTable._ID,
-//                            DBContract.LocationTable.COLUMN_NAME_INPUT_STRING, DBContract.LocationTable.COLUMN_NAME_LAT_STRING,
-//                            DBContract.LocationTable.COLUMN_NAME_LONG_STRING},
-//                        DBContract.LocationTable.COLUMN_NAME_INPUT_STRING + "<> ?",
-//                        new String[]{""},
-//                        null,
-//                        null,
-//                        null);
                         new String[]{DBContract.LocationTable._ID,
                                 DBContract.LocationTable.COLUMN_NAME_INPUT_STRING, DBContract.LocationTable.COLUMN_NAME_LAT_STRING,
                                 DBContract.LocationTable.COLUMN_NAME_LONG_STRING},
@@ -266,7 +201,7 @@ public class LocationActivity extends AppCompatActivity implements
                 SQLiteListView.setAdapter(mSQLCursorAdapter);
             }
             catch (Exception e) {
-                latitude.setText("SQLite load data error!");
+                latitude.setText(getString(R.string.load_data_error));
             }
         }
     }
@@ -280,16 +215,13 @@ class SQLiteLocation extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // DEBUG
-        db.execSQL(DBContract.LocationTable.SQL_DROP_TABLE);
-
         db.execSQL(DBContract.LocationTable.SQL_CREATE_TABLE);
 
         // DEBUG
         ContentValues testValues = new ContentValues();
-        testValues.put(DBContract.LocationTable.COLUMN_NAME_INPUT_STRING, "Testing...");
-        testValues.put(DBContract.LocationTable.COLUMN_NAME_LAT_STRING, "-100.0");
-        testValues.put(DBContract.LocationTable.COLUMN_NAME_LONG_STRING, "40.0");
+        testValues.put(DBContract.LocationTable.COLUMN_NAME_INPUT_STRING, "Test String");
+        testValues.put(DBContract.LocationTable.COLUMN_NAME_LAT_STRING, "-1");
+        testValues.put(DBContract.LocationTable.COLUMN_NAME_LONG_STRING, "1");
         db.insert(DBContract.LocationTable.TABLE_NAME,null,testValues);
     }
 

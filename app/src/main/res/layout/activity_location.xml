@@ -39,7 +39,7 @@
         android:id="@+id/s_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/connected"
+        android:text="@string/submit"
         android:layout_below="@+id/s_linearLayout"
         android:layout_centerHorizontal="true" />
 

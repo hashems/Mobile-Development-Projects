@@ -3,12 +3,11 @@
     <string name="intro">Hello, World! It\'s me, SQLite and Location!</string>
     <string name="start">Let\'s Go!</string>
     <string name="input_prompt">Gimme some text:&#032;</string>
+    <string name="submit">Go, go SQLite!</string>
     <string name="latitude_string">Latitude:&#032;</string>
     <string name="longitude_string">Longitude:&#032;</string>
-    <string name="connected">Let\'s locate you!</string>
-    <string name="permission_denied">Permission Denied!</string>
-    <string name="location_unavailable">Location Unavailable!</string>
-    <string name="connection_suspended">Connection Suspended!</string>
     <string name="default_lat">44.5</string>
     <string name="default_long">-123.2</string>
+    <string name="connection_suspended">Location Error: Connection suspended</string>
+    <string name="load_data_error">SQLite Database Error: Unable to load data</string>
 </resources>
