@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
 //                startActivity(intent);
 //            }
 //        });
-        
+
         // Input and Location
         input = (EditText) findViewById(R.id.Input);
 
