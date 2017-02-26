@@ -9,4 +9,6 @@
     <string name="permission_denied">Permission Denied!</string>
     <string name="location_unavailable">Location Unavailable!</string>
     <string name="connection_suspended">Connection Suspended!</string>
+    <string name="default_lat">44.5</string>
+    <string name="default_long">-123.2</string>
 </resources>
