@@ -2,8 +2,9 @@
     <string name="app_name">HW6 - SQLite and Location</string>
     <string name="intro">Hello, World! It\'s me, SQLite and Location!</string>
     <string name="button">SUBMIT</string>
-    <string name="latitude_string">Latitude:</string>
-    <string name="longitude_string">Longitude:</string>
+    <string name="input_prompt">Gimme some text: </string>
+    <string name="latitude_string">Latitude: </string>
+    <string name="longitude_string">Longitude: </string>
     <string name="connected">Let\'s locate you&#8230;</string>
     <string name="permission_denied">Permission Denied!</string>
     <string name="location_unavailable">Location Unavailable!</string>

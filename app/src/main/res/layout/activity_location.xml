@@ -12,7 +12,7 @@
     tools:context="hashems.mobile_development_projects.LocationActivity">
 
     <TextView
-        android:id="@+id/UserInput"
+        android:id="@+id/Output"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="40sp" />

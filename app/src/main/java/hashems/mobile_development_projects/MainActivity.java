@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
         // Input and Location
         input = (EditText) findViewById(R.id.Input);
 
-        Button button = (Button) findViewById(R.id.submit);
+        Button button = (Button) findViewById(R.id.Submit);
         button.setOnClickListener(new View.OnClickListener(){
 
             @Override

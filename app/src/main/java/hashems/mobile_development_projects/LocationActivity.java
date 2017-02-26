@@ -10,6 +10,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -20,14 +23,19 @@ import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListe
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.vision.text.Text;
 
 public class LocationActivity extends AppCompatActivity implements
         ConnectionCallbacks, OnConnectionFailedListener {
 
     private GoogleApiClient mGoogleApiClient;
 
-    private TextView userInput;
+//    private TextView input_prompt;
+//    private EditText input;
+    private TextView output;            // DEBUG
+//    private TextView latitude_prompt;   // DEBUG
     private TextView latitude;
+//    private TextView longitude_prompt;  // DEBUG
     private TextView longitude;
 
     private LocationRequest mLocationRequest;
@@ -40,6 +48,7 @@ public class LocationActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_location);
+
         if(mGoogleApiClient == null) {
             mGoogleApiClient = new GoogleApiClient.Builder(this)
                     .addConnectionCallbacks(this)
@@ -48,14 +57,18 @@ public class LocationActivity extends AppCompatActivity implements
                     .build();
         }
 
-        userInput = (TextView) findViewById(R.id.UserInput);
+//        input_prompt = (TextView) findViewById(R.id.Prompt);
+//        input = (EditText) findViewById(R.id.Input);
+        output = (TextView) findViewById(R.id.Output);
         latitude = (TextView) findViewById(R.id.Latitude);
         longitude = (TextView) findViewById(R.id.Longitude);
 
+//        input_prompt.setText(R.string.input_prompt);
+        // Print user input entered in Main Activity
         Bundle extras = getIntent().getExtras();
         String input = extras.getString("userInput");
-        userInput.setText(input);
-        latitude.setText("Let's Location!\nGive me some coordinates!");
+        output.setText(input);
+        latitude.setText(getString(R.string.connected));
 
         mLocationRequest = LocationRequest.create();
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -75,6 +88,13 @@ public class LocationActivity extends AppCompatActivity implements
                 }
             }
         };
+
+//        Button button = (Button)findViewById(R.id.submit);
+//        button.setOnClickListener(new View.OnClickListener() {
+//          @Override
+//          public void onClick(View v) {
+//          }
+//        }
     }
 
     @Override
