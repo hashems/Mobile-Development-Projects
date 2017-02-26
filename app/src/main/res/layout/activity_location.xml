@@ -8,7 +8,14 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
+    android:orientation="vertical"
     tools:context="hashems.mobile_development_projects.LocationActivity">
+
+    <TextView
+        android:id="@+id/UserInput"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="40sp" />
 
     <TextView
         android:id="@+id/Latitude"
@@ -21,25 +28,4 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="40sp" />
-
-    <!--<TextView-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:textSize="40sp"-->
-        <!--android:textColor="@color/colorTextGranted"-->
-        <!--android:text="Permission Granted!" />-->
-
-    <!--<TextView-->
-        <!--android:id="@+id/MainLayout"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:textSize="40sp"-->
-        <!--android:textColor="@color/colorTextDenied"-->
-        <!--android:text="Permission Denied!" />-->
-
-    <!--<TextView-->
-        <!--android:id="@+id/debugTextView"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:textSize="40sp" />-->
 </LinearLayout>
