@@ -1,7 +1,11 @@
 package hashems.mobile_development_projects;
 
+// CITE: CS 496 Week 7 Content (various)
+// CITE: CS 496 Piazza Forums (various)
+// CITE: Android Permission Documentation (various)
+// CITE: Android SQLite Documentation (various)
+
 import android.Manifest;
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.Context;
@@ -32,7 +36,7 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
-public class LocationActivity extends AppCompatActivity implements
+public class SQLiteLocationActivity extends AppCompatActivity implements
         ConnectionCallbacks, OnConnectionFailedListener {
 
     private GoogleApiClient mGoogleApiClient;
@@ -76,6 +80,7 @@ public class LocationActivity extends AppCompatActivity implements
         }
 
         mLocationListener = new LocationListener() {
+
             @Override
             public void onLocationChanged(Location location) {
                 if (location != null) {
@@ -87,7 +92,6 @@ public class LocationActivity extends AppCompatActivity implements
 
         Button button = (Button) findViewById(R.id.s_button);
         button.setOnClickListener(new View.OnClickListener(){
-
             @Override
             public void onClick(View v) {
                 if(mSQLDB != null){
@@ -119,23 +123,19 @@ public class LocationActivity extends AppCompatActivity implements
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION_RESULT);
-
-            // Set OSU cooridinates if location permission denied
-            latitude.setText(getString(R.string.default_lat));
-            longitude.setText(getString(R.string.default_long));
-
-            if(mSQLDB != null){
-                ContentValues values = new ContentValues();
-                values.put(DBContract.LocationTable.COLUMN_NAME_INPUT_STRING, ((EditText) findViewById(R.id.s_input)).getText().toString());
-                values.put(DBContract.LocationTable.COLUMN_NAME_LAT_STRING, ((TextView) findViewById(R.id.Latitude)).getText().toString());
-                values.put(DBContract.LocationTable.COLUMN_NAME_LONG_STRING, ((TextView) findViewById(R.id.Longitude)).getText().toString());
-                mSQLDB.insert(DBContract.LocationTable.TABLE_NAME, null, values);
-                populateTable();
-            }
             return;
         }
 
         updateLocation();
+
+        if(mSQLDB != null){
+            ContentValues values = new ContentValues();
+            values.put(DBContract.LocationTable.COLUMN_NAME_INPUT_STRING, ((EditText) findViewById(R.id.s_input)).getText().toString());
+            values.put(DBContract.LocationTable.COLUMN_NAME_LAT_STRING, ((TextView) findViewById(R.id.Latitude)).getText().toString());
+            values.put(DBContract.LocationTable.COLUMN_NAME_LONG_STRING, ((TextView) findViewById(R.id.Longitude)).getText().toString());
+            mSQLDB.insert(DBContract.LocationTable.TABLE_NAME, null, values);
+            populateTable();
+        }
     }
 
     @Override
@@ -156,7 +156,7 @@ public class LocationActivity extends AppCompatActivity implements
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
-            // Set OSU cooridinates if location permission denied
+            // Set OSU coordinates if location permission denied
             latitude.setText(getString(R.string.default_lat));
             longitude.setText(getString(R.string.default_long));
             return;
@@ -219,7 +219,7 @@ class SQLiteLocation extends SQLiteOpenHelper {
 
         // DEBUG
         ContentValues testValues = new ContentValues();
-        testValues.put(DBContract.LocationTable.COLUMN_NAME_INPUT_STRING, "Test String");
+        testValues.put(DBContract.LocationTable.COLUMN_NAME_INPUT_STRING, "DB Init");
         testValues.put(DBContract.LocationTable.COLUMN_NAME_LAT_STRING, "-1");
         testValues.put(DBContract.LocationTable.COLUMN_NAME_LONG_STRING, "1");
         db.insert(DBContract.LocationTable.TABLE_NAME,null,testValues);
