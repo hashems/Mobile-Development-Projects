@@ -36,7 +36,7 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
-public class SQLiteLocationActivity extends AppCompatActivity implements
+public class LocationActivity extends AppCompatActivity implements
         ConnectionCallbacks, OnConnectionFailedListener {
 
     private GoogleApiClient mGoogleApiClient;
@@ -242,7 +242,7 @@ final class DBContract {
         public static final String COLUMN_NAME_INPUT_STRING = "input";
         public static final String COLUMN_NAME_LAT_STRING = "latitude";
         public static final String COLUMN_NAME_LONG_STRING = "longitude";
-        public static final int DB_VERSION = 1;
+        public static final int DB_VERSION = 11;
 
 
         public static final String SQL_CREATE_TABLE = "CREATE TABLE " +
