@@ -2,4 +2,5 @@
     <string name="app_name">HW7 - Android HTTP and OAuth</string>
     <string name="intro">Hello, World! It\'s me, Android HTTP! And me, OAuth!</string>
     <string name="start">Let\'s Go!</string>
+    <string name="get_posts">Get Posts</string>
 </resources>
