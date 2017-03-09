@@ -36,11 +36,13 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import android.util.Log;
+
 public class APIActivity extends AppCompatActivity {
 
     // Google Cloud Platform Credentials - CS 496 HW7
     public String APIkey = "AIzaSyCBag-v-Fso3d6K2hWbZdu5IzHxLjJivjo";
-    public String clientID = "785176820736-tg4fcc6g2lbhhjnagnup32sp358ra65a.apps.googleusercontent.com";
+    public String clientID = "785176820736-9ctev4vqlmho2d2brgv1lo8d8hg5s7cl.apps.googleusercontent.com";
 
     private AuthorizationService mAuthorizationService;
     private AuthState mAuthState;
@@ -62,10 +64,11 @@ public class APIActivity extends AppCompatActivity {
                     mAuthState.performActionWithFreshTokens(mAuthorizationService, new AuthState.AuthStateAction() {
                         @Override
                         public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException e) {
+                            Log.d("accessToken", accessToken);
                             if (e == null) {
                                 mOkHttpClient = new OkHttpClient();
                                 HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/people/me/activities/user");
-                                reqUrl = reqUrl.newBuilder().addQueryParameter("key", APIkey).build();
+                                reqUrl = reqUrl.newBuilder().addQueryParameter("key", "AIzaSyCBag-v-Fso3d6K2hWbZdu5IzHxLjJivjo").build();
                                 Request request = new Request.Builder()
                                         .url(reqUrl)
                                         .addHeader("Authorization", "Bearer" + accessToken)
@@ -79,6 +82,7 @@ public class APIActivity extends AppCompatActivity {
                                     @Override
                                     public void onResponse(Call call, Response response) throws IOException {
                                         String r = response.body().string();
+                                        Log.d("response", r);
                                         try {
                                             JSONObject j = new JSONObject(r);
                                             JSONArray items = j.getJSONArray("items");
@@ -98,8 +102,9 @@ public class APIActivity extends AppCompatActivity {
                                             runOnUiThread(new Runnable() {
                                                 @Override
                                                 public void run() {
-                                                    ListView postListView = (ListView) findViewById(R.id.posts);
-                                                    postListView.setAdapter(postAdapter);
+//                                                    ListView postListView = (ListView) findViewById(R.id.posts);
+//                                                    postListView.setAdapter(postAdapter);
+                                                    ((ListView)findViewById(R.id.posts)).setAdapter(postAdapter);
                                                 }
                                             });
                                         } catch (JSONException e1) {
@@ -137,6 +142,7 @@ public class APIActivity extends AppCompatActivity {
         }
 
         if (auth != null && auth.getAccessToken() != null) {
+            Log.d("auth", auth.getAccessToken());
             return auth;
         } else {
             updateAuthState();
@@ -146,11 +152,11 @@ public class APIActivity extends AppCompatActivity {
 
     void updateAuthState() {
         Uri authEndpoint = new Uri.Builder().scheme("https").authority("accounts.google.com").path("/o/oauth2/v2/auth").build();
-        Uri authTokenEndpoint = new Uri.Builder().scheme("https").authority("www.googleapis.com").path("/oauth2/v4/token").build();
+        Uri tokenEndpoint = new Uri.Builder().scheme("https").authority("www.googleapis.com").path("/oauth2/v4/token").build();
         Uri redirect = new Uri.Builder().scheme("hashems.hw7").path("redirect").build();
 
-        AuthorizationServiceConfiguration config = new AuthorizationServiceConfiguration(authEndpoint, authTokenEndpoint, null);
-        AuthorizationRequest req = new AuthorizationRequest.Builder(config, clientID, ResponseTypeValues.CODE, redirect)
+        AuthorizationServiceConfiguration config = new AuthorizationServiceConfiguration(authEndpoint, tokenEndpoint, null);
+        AuthorizationRequest req = new AuthorizationRequest.Builder(config, "785176820736-9ctev4vqlmho2d2brgv1lo8d8hg5s7cl.apps.googleusercontent.com", ResponseTypeValues.CODE, redirect)
                 .setScopes("https://www.googleapis.com/auth/plus.me", "https://www.googleapis.com/auth/plus.stream.write", "https://www.googleapis.com/auth/plus.stream.read")
                 .build();
 
