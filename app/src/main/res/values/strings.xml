@@ -3,4 +3,6 @@
     <string name="intro">Hello, World! It\'s me, Android HTTP! And me, OAuth!</string>
     <string name="start">Let\'s Go!</string>
     <string name="get_posts">Get Posts</string>
+    <string name="make_post">Submit Post</string>
+    <string name="input_prompt">Gimme some text: </string>
 </resources>

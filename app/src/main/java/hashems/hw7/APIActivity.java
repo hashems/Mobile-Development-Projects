@@ -40,10 +40,6 @@ import android.util.Log;
 
 public class APIActivity extends AppCompatActivity {
 
-    // Google Cloud Platform Credentials - CS 496 HW7
-    public String APIkey = "AIzaSyCBag-v-Fso3d6K2hWbZdu5IzHxLjJivjo";
-    public String clientID = "785176820736-9ctev4vqlmho2d2brgv1lo8d8hg5s7cl.apps.googleusercontent.com";
-
     private AuthorizationService mAuthorizationService;
     private AuthState mAuthState;
     private OkHttpClient mOkHttpClient;
@@ -51,7 +47,7 @@ public class APIActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        SharedPreferences authPreferences = getSharedPreferences("auth", MODE_PRIVATE);
+        SharedPreferences authPreference = getSharedPreferences("auth", MODE_PRIVATE);
         setContentView(R.layout.activity_api);
         mAuthorizationService = new AuthorizationService(this);
 
@@ -64,14 +60,13 @@ public class APIActivity extends AppCompatActivity {
                     mAuthState.performActionWithFreshTokens(mAuthorizationService, new AuthState.AuthStateAction() {
                         @Override
                         public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException e) {
-                            Log.d("accessToken", accessToken);
                             if (e == null) {
                                 mOkHttpClient = new OkHttpClient();
                                 HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/people/me/activities/user");
                                 reqUrl = reqUrl.newBuilder().addQueryParameter("key", "AIzaSyCBag-v-Fso3d6K2hWbZdu5IzHxLjJivjo").build();
                                 Request request = new Request.Builder()
                                         .url(reqUrl)
-                                        .addHeader("Authorization", "Bearer" + accessToken)
+                                        .addHeader("Authorization", "Bearer " + accessToken)
                                         .build();
                                 mOkHttpClient.newCall(request).enqueue(new Callback() {
                                     @Override
@@ -82,7 +77,6 @@ public class APIActivity extends AppCompatActivity {
                                     @Override
                                     public void onResponse(Call call, Response response) throws IOException {
                                         String r = response.body().string();
-                                        Log.d("response", r);
                                         try {
                                             JSONObject j = new JSONObject(r);
                                             JSONArray items = j.getJSONArray("items");
@@ -102,9 +96,7 @@ public class APIActivity extends AppCompatActivity {
                                             runOnUiThread(new Runnable() {
                                                 @Override
                                                 public void run() {
-//                                                    ListView postListView = (ListView) findViewById(R.id.posts);
-//                                                    postListView.setAdapter(postAdapter);
-                                                    ((ListView)findViewById(R.id.posts)).setAdapter(postAdapter);
+                                                    ((ListView)findViewById(R.id.posts_list)).setAdapter(postAdapter);
                                                 }
                                             });
                                         } catch (JSONException e1) {
@@ -142,7 +134,6 @@ public class APIActivity extends AppCompatActivity {
         }
 
         if (auth != null && auth.getAccessToken() != null) {
-            Log.d("auth", auth.getAccessToken());
             return auth;
         } else {
             updateAuthState();

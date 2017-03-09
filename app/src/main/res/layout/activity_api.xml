@@ -11,6 +11,26 @@
     android:orientation="vertical"
     tools:context="hashems.hw7.APIActivity">
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="25sp"
+            android:text="@string/input_prompt" />
+
+        <EditText
+            android:id="@+id/input"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="text" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="30sp"
+            android:background="@color/colorButton"
+            android:textColor="@color/colorPrimaryText"
+            android:text="@string/make_post" />
+
         <Button
             android:id="@+id/button_get_posts"
             android:layout_width="match_parent"
@@ -27,7 +47,7 @@
             android:text="This is just a text" />
 
         <ListView
-            android:id="@+id/posts"
+            android:id="@+id/posts_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
