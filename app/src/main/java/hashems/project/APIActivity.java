@@ -1,4 +1,4 @@
-package hashems.hw7;
+package hashems.project;
 
 // CITE: CS 496 Week 8 Content (various)
 // CITE: CS 496 Piazza Forums (various)

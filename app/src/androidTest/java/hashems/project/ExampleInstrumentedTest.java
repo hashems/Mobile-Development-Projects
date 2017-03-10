@@ -1,4 +1,4 @@
-package hashems.hw7;
+package hashems.project;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

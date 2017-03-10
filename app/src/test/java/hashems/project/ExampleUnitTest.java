@@ -1,4 +1,4 @@
-package hashems.hw7;
+package hashems.project;
 
 import org.junit.Test;
 

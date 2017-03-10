@@ -9,7 +9,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:orientation="vertical"
-    tools:context="hashems.hw7.APIActivity">
+    tools:context="hashems.project.APIActivity">
 
     <TextView
         android:id="@+id/post_item_title"
