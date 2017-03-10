@@ -24,8 +24,10 @@
             android:inputType="text" />
 
         <Button
+            android:id="@+id/button_submit_posts"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_margin="5dp"
             android:textSize="30sp"
             android:background="@color/colorButton"
             android:textColor="@color/colorPrimaryText"
@@ -36,15 +38,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="30sp"
+            android:layout_margin="5dp"
             android:background="@color/colorButton"
             android:textColor="@color/colorPrimaryText"
             android:text="@string/get_posts" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:text="This is just a text" />
 
         <ListView
             android:id="@+id/posts_list"

@@ -1,5 +1,10 @@
 package hashems.hw7;
 
+// CITE: CS 496 Week 8 Content (various)
+// CITE: CS 496 Piazza Forums (various)
+// CITE: Android OAuth Documentation (various)
+// CITE: OkHttp Documentation (various)
+
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -9,6 +14,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
@@ -32,11 +38,12 @@ import java.util.Map;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.HttpUrl;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
-import android.util.Log;
 
 public class APIActivity extends AppCompatActivity {
 
@@ -51,9 +58,53 @@ public class APIActivity extends AppCompatActivity {
         setContentView(R.layout.activity_api);
         mAuthorizationService = new AuthorizationService(this);
 
+        // Submit Google+ Posts
+        Button submit_posts_button = (Button) findViewById(R.id.button_submit_posts);
+        submit_posts_button.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                try{
+                    mAuthState.performActionWithFreshTokens(mAuthorizationService, new AuthState.AuthStateAction() {
+                        @Override
+                        public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException e) {
+                            if (e == null) {
+                                mOkHttpClient = new OkHttpClient();
+                                HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/people/114062465972706991937/activities");
+                                reqUrl = reqUrl.newBuilder().addQueryParameter("key", "AIzaSyCBag-v-Fso3d6K2hWbZdu5IzHxLjJivjo").build();
+                                MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+                                EditText input = (EditText) findViewById(R.id.input);
+                                String postContent = input.getText().toString();
+                                String json = "{  \"object\": { \"originalContent\": \"" + postContent + "\" }, \"access\": { \"domainRestricted\": true } }";
+                                RequestBody body = RequestBody.create(JSON, json);
+                                Request request = new Request.Builder()
+                                        .url(reqUrl)
+                                        .addHeader("Authorization", "Bearer " + accessToken)
+                                        .post(body)
+                                        .build();
+                                mOkHttpClient.newCall(request).enqueue(new Callback() {
+                                    @Override
+                                    public void onFailure(Call call, IOException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    @Override
+                                    public void onResponse(Call call, Response response) throws IOException {
+                                        String r = response.body().string();
+                                    }
+                                });
+                            }
+                        }
+                    });
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
+
+
         // View Google+ Posts
-        Button button = (Button) findViewById(R.id.button_get_posts);
-        button.setOnClickListener(new View.OnClickListener(){
+        Button get_posts_button = (Button) findViewById(R.id.button_get_posts);
+        get_posts_button.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
                 try{

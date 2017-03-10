@@ -1,5 +1,9 @@
 package hashems.hw7;
 
+// CITE: CS 496 Week 8 Content (various)
+// CITE: CS 496 Piazza Forums (various)
+// CITE: Android OAuth Documentation (various)
+
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;

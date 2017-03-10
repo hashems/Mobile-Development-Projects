@@ -13,7 +13,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // SQLite and Location
+        // OAuth and HTTP
         Button button = (Button) findViewById(R.id.Start);
         button.setOnClickListener(new View.OnClickListener(){
             @Override
