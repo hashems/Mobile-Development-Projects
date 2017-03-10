@@ -47,6 +47,10 @@ import okhttp3.Response;
 
 public class APIActivity extends AppCompatActivity {
 
+    private String API_key = "AIzaSyBjI0EQp8Og_X69WK3xYrIN8q2SPcX-hKo";
+    private String client_ID = "234170585101-i50nt19hn2bqn8j02j0738dbtig6ne0i.apps.googleusercontent.com";
+    private String my_plus_account = "114062465972706991937";
+
     private AuthorizationService mAuthorizationService;
     private AuthState mAuthState;
     private OkHttpClient mOkHttpClient;
@@ -70,7 +74,7 @@ public class APIActivity extends AppCompatActivity {
                             if (e == null) {
                                 mOkHttpClient = new OkHttpClient();
                                 HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/people/114062465972706991937/activities");
-                                reqUrl = reqUrl.newBuilder().addQueryParameter("key", "AIzaSyCBag-v-Fso3d6K2hWbZdu5IzHxLjJivjo").build();
+                                reqUrl = reqUrl.newBuilder().addQueryParameter("key", "AIzaSyBjI0EQp8Og_X69WK3xYrIN8q2SPcX-hKo").build();
                                 MediaType JSON = MediaType.parse("application/json; charset=utf-8");
                                 EditText input = (EditText) findViewById(R.id.input);
                                 String postContent = input.getText().toString();
@@ -114,7 +118,7 @@ public class APIActivity extends AppCompatActivity {
                             if (e == null) {
                                 mOkHttpClient = new OkHttpClient();
                                 HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/people/me/activities/user");
-                                reqUrl = reqUrl.newBuilder().addQueryParameter("key", "AIzaSyCBag-v-Fso3d6K2hWbZdu5IzHxLjJivjo").build();
+                                reqUrl = reqUrl.newBuilder().addQueryParameter("key", "AIzaSyBjI0EQp8Og_X69WK3xYrIN8q2SPcX-hKo").build();
                                 Request request = new Request.Builder()
                                         .url(reqUrl)
                                         .addHeader("Authorization", "Bearer " + accessToken)
@@ -198,7 +202,7 @@ public class APIActivity extends AppCompatActivity {
         Uri redirect = new Uri.Builder().scheme("hashems.hw7").path("redirect").build();
 
         AuthorizationServiceConfiguration config = new AuthorizationServiceConfiguration(authEndpoint, tokenEndpoint, null);
-        AuthorizationRequest req = new AuthorizationRequest.Builder(config, "785176820736-9ctev4vqlmho2d2brgv1lo8d8hg5s7cl.apps.googleusercontent.com", ResponseTypeValues.CODE, redirect)
+        AuthorizationRequest req = new AuthorizationRequest.Builder(config, "234170585101-i50nt19hn2bqn8j02j0738dbtig6ne0i.apps.googleusercontent.com", ResponseTypeValues.CODE, redirect)
                 .setScopes("https://www.googleapis.com/auth/plus.me", "https://www.googleapis.com/auth/plus.stream.write", "https://www.googleapis.com/auth/plus.stream.read")
                 .build();
 
