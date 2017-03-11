@@ -1,8 +1,11 @@
 <resources>
-    <string name="app_name">HW7 - Android HTTP and OAuth</string>
-    <string name="intro">Hello, World! It\'s me, Android HTTP! And me, OAuth!</string>
-    <string name="start">Let\'s Go!</string>
-    <string name="get_posts">Get Posts</string>
-    <string name="make_post">Submit Post</string>
+    <string name="app_name">Final Project - Mobile Only</string>
+    <string name="intro">Hello, World! It\'s me, Final Project! I\'m the Mobile Only option!</string>
+    <string name="sign_in">Google+ Sign In</string>
     <string name="input_prompt">Gimme some text: </string>
+    <string name="make_post">Submit Post</string>
+    <string name="get_posts">Get Posts</string>
+    <string name="share_location">Share Location</string>
+    <string name="view_comments">View Comments</string>
+    <string name="logout">Logout</string>
 </resources>

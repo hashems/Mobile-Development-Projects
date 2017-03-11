@@ -13,8 +13,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // OAuth and HTTP
-        Button button = (Button) findViewById(R.id.Start);
+        // OAuth flow
+        Button button = (Button) findViewById(R.id.sign_in);
         button.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {

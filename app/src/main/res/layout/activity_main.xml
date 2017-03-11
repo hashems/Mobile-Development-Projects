@@ -12,7 +12,7 @@
     tools:context="hashems.project.MainActivity">
 
     <TextView
-        android:id="@+id/Intro"
+        android:id="@+id/intro"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
@@ -20,11 +20,11 @@
         android:text="@string/intro" />
 
     <Button
-        android:id="@+id/Start"
+        android:id="@+id/sign_in"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="30sp"
         android:background="@color/colorButton"
         android:textColor="@color/colorPrimaryText"
-        android:text="@string/start" />
+        android:text="@string/sign_in" />
 </LinearLayout>

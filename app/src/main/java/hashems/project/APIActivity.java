@@ -8,10 +8,12 @@ package hashems.project;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -49,11 +51,14 @@ public class APIActivity extends AppCompatActivity {
 
     private String API_key = "AIzaSyBjI0EQp8Og_X69WK3xYrIN8q2SPcX-hKo";
     private String client_ID = "234170585101-i50nt19hn2bqn8j02j0738dbtig6ne0i.apps.googleusercontent.com";
-    private String my_plus_account = "114062465972706991937";
+    private String userId = "114062465972706991937";
 
     private AuthorizationService mAuthorizationService;
     private AuthState mAuthState;
     private OkHttpClient mOkHttpClient;
+
+    private ArrayList<String> postIds = new ArrayList<String>();
+    private String activityId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,7 +144,7 @@ public class APIActivity extends AppCompatActivity {
                                             for(int i = 0; i < 3; i++) {
                                                 HashMap<String, String> m = new HashMap<String, String>();
                                                 m.put("title", items.getJSONObject(i).getString("title"));
-                                                m.put("published", items.getJSONObject(i).getString("published"));
+//                                                m.put("published", items.getJSONObject(i).getString("published"));
                                                 posts.add(m);
                                             }
                                             final SimpleAdapter postAdapter = new SimpleAdapter(
@@ -147,7 +152,8 @@ public class APIActivity extends AppCompatActivity {
                                                     posts,
                                                     R.layout.post_item,
                                                     new String[]{"title", "published"},
-                                                    new int[]{R.id.post_item_title, R.id.post_item_date});
+//                                                    new int[]{R.id.post_item_title, R.id.post_item_date});
+                                                    new int[]{R.id.post_item_title});
                                             runOnUiThread(new Runnable() {
                                                 @Override
                                                 public void run() {
@@ -167,13 +173,129 @@ public class APIActivity extends AppCompatActivity {
                 }
             }
         });
+
+
+        // Share Location as Comment on Post
+        Button submit_location_button = (Button) findViewById(R.id.button_submit_location);
+        submit_location_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try{
+                    mAuthState.performActionWithFreshTokens(mAuthorizationService, new AuthState.AuthStateAction() {
+                        @Override
+                        public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException e) {
+                            if (e == null) {
+                                mOkHttpClient = new OkHttpClient();
+                                // HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/people/" + userId + "/activities");
+                                HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/people/114062465972706991937/activities");
+                                reqUrl = reqUrl.newBuilder().addQueryParameter("key", "AIzaSyBjI0EQp8Og_X69WK3xYrIN8q2SPcX-hKo").build();
+                                MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+                                // String location_comment = "Hello from " + location.getLatitude() + ", " + location.getLongitude() = "!";
+                                String location_comment = "Hello from 44.5, -123.2!";
+                                String json = "{  \"object\": { \"originalContent\": \"" + location_comment + "\" }, \"access\": { \"domainRestricted\": true } }";
+                                RequestBody body = RequestBody.create(JSON, json);
+                                Request request = new Request.Builder()
+                                        .url(reqUrl)
+                                        .addHeader("Authorization", "Bearer " + accessToken)
+                                        .post(body)
+                                        .build();
+                                mOkHttpClient.newCall(request).enqueue(new Callback() {
+                                    @Override
+                                    public void onFailure(Call call, IOException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    @Override
+                                    public void onResponse(Call call, Response response) throws IOException {
+                                        String r = response.body().string();
+                                    }
+                                });
+                            }
+                        }
+                    });
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
+
+
+
+        // View Location as Comment on Post
+        Button view_location_button = (Button) findViewById(R.id.button_view_comments);
+        view_location_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // View comments for post
+                try{
+                    mAuthState.performActionWithFreshTokens(mAuthorizationService, new AuthState.AuthStateAction() {
+                        @Override
+                        public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException e) {
+                            if (e == null) {
+                                mOkHttpClient = new OkHttpClient();
+                                // HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/activities/" + activityId + "/comments");
+                                HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/activities/z12rsh3hyruvwpt1j22fspphauzptr3ds/comments");
+                                reqUrl = reqUrl.newBuilder().addQueryParameter("key", "AIzaSyBjI0EQp8Og_X69WK3xYrIN8q2SPcX-hKo").build();
+                                Request request = new Request.Builder()
+                                        .url(reqUrl)
+                                        .addHeader("Authorization", "Bearer " + accessToken)
+                                        .build();
+                                mOkHttpClient.newCall(request).enqueue(new Callback() {
+                                    @Override
+                                    public void onFailure(Call call, IOException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    @Override
+                                    public void onResponse(Call call, Response response) throws IOException {
+                                        String r = response.body().string();
+                                        // DEBUG
+                                        Log.d("COMMENT RESPONSE", r);
+                                        try {
+                                            JSONObject j = new JSONObject(r);
+                                            JSONArray items = j.getJSONArray("items");
+                                            List<Map<String, String>> comments = new ArrayList<Map<String, String>>();
+                                            for(int i = 0; i < 3; i++) {
+                                                HashMap<String, String> c = new HashMap<String, String>();
+                                                // DEBUG
+                                                Log.d("COMMENT", items.getJSONObject(i).getJSONObject("object").getString("originalContent"));
+                                                c.put("content", items.getJSONObject(i).getJSONObject("object").getString("originalContent"));
+                                                comments.add(c);
+                                            }
+                                            final SimpleAdapter commentAdapter = new SimpleAdapter(
+                                                    APIActivity.this,
+                                                    comments,
+                                                    R.layout.comment_item,
+                                                    new String[]{"originalContent"},
+                                                    new int[]{R.id.comment_item_content});
+                                            runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    ((ListView)findViewById(R.id.comments_list)).setAdapter(commentAdapter);
+                                                }
+                                            });
+                                        } catch (JSONException e1) {
+                                            e1.printStackTrace();
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    });
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
     }
+
 
     @Override
     protected void onStart() {
         mAuthState = getOrCreateAuthState();
         super.onStart();
     }
+
 
     AuthState getOrCreateAuthState() {
         AuthState auth = null;
@@ -196,10 +318,11 @@ public class APIActivity extends AppCompatActivity {
         }
     }
 
+
     void updateAuthState() {
         Uri authEndpoint = new Uri.Builder().scheme("https").authority("accounts.google.com").path("/o/oauth2/v2/auth").build();
         Uri tokenEndpoint = new Uri.Builder().scheme("https").authority("www.googleapis.com").path("/oauth2/v4/token").build();
-        Uri redirect = new Uri.Builder().scheme("hashems.hw7").path("redirect").build();
+        Uri redirect = new Uri.Builder().scheme("hashems.project").path("redirect").build();
 
         AuthorizationServiceConfiguration config = new AuthorizationServiceConfiguration(authEndpoint, tokenEndpoint, null);
         AuthorizationRequest req = new AuthorizationRequest.Builder(config, "234170585101-i50nt19hn2bqn8j02j0738dbtig6ne0i.apps.googleusercontent.com", ResponseTypeValues.CODE, redirect)
