@@ -24,8 +24,6 @@
         </activity>
         <activity android:name="hashems.project.AuthCompleteActivity">
         </activity>
-        <!--<activity android:name="hashems.project.LocationActivity">-->
-        <!--</activity>-->
     </application>
 
 </manifest>

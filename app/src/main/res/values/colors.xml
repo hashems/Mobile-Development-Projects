@@ -4,4 +4,5 @@
     <color name="colorPrimaryText">#FFFFFF</color>
     <color name="colorButton">#8830b1</color>
     <color name="colorButtonSubmit">#65beac</color>
+    <color name="colorButtonLogout">#000000</color>
 </resources>

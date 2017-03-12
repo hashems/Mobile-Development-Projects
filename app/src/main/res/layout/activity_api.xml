@@ -10,150 +10,97 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="hashems.project.APIActivity">
 
-        <TextView
-            android:id="@+id/prompt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:text="@string/input_prompt" />
-
-        <EditText
-            android:id="@+id/input"
-            android:layout_width="210dp"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/prompt"
-            android:inputType="text" />
-
         <Button
             android:id="@+id/button_submit_posts"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/prompt"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
+            android:layout_height="30sp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
             android:layout_margin="5dp"
             android:textSize="20sp"
             android:background="@color/colorButtonSubmit"
             android:textColor="@color/colorPrimaryText"
-            android:text="@string/make_post" />
+            android:text="@string/submit_post" />
 
         <Button
             android:id="@+id/button_get_posts"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/button_submit_posts"
+            android:layout_width="wrap_content"
+            android:layout_height="30sp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
             android:textSize="20sp"
             android:layout_margin="5dp"
             android:background="@color/colorButton"
             android:textColor="@color/colorPrimaryText"
             android:text="@string/get_posts" />
 
-        <!--<ListView-->
-            <!--android:id="@+id/posts_list"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_below="@+id/button_get_posts" />-->
+        <ListView
+            android:id="@+id/posts_list"
+            android:layout_width="match_parent"
+            android:layout_height="100sp"
+            android:layout_below="@+id/button_get_posts" />
 
-    <TextView
-        android:id="@+id/post_item_1"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_below="@+id/button_get_posts"
-        android:textSize="25sp" />
+        <Button
+            android:id="@+id/button_get_circles"
+            android:layout_width="match_parent"
+            android:layout_height="30sp"
+            android:layout_below="@+id/posts_list"
+            android:textSize="20sp"
+            android:layout_margin="5dp"
+            android:background="@color/colorButton"
+            android:textColor="@color/colorPrimaryText"
+            android:text="Get Circles" />
 
-    <ListView
-        android:id="@+id/comment_list_1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/post_item_1"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="13dp" />
+        <ListView
+            android:id="@+id/circles_list"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_below="@+id/button_get_circles" />
 
-    <Button
-        android:id="@+id/button_submit_location_1"
-        android:layout_width="150dp"
-        android:layout_height="20dp"
-        android:layout_below="@+id/comment_list_1"
-        android:layout_alignParentLeft="true"
-        android:background="@color/colorButtonSubmit"
-        android:textColor="@color/colorPrimaryText"
-        android:text="@string/share_location" />
+        <EditText
+            android:id="@+id/input_circle_name"
+            android:textSize="30sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/circles_list"
+            android:hint="Circle Name" />
 
-    <!--<Button-->
-        <!--android:id="@+id/button_view_comments_1"-->
-        <!--android:layout_width="150dp"-->
-        <!--android:layout_height="20dp"-->
-        <!--android:layout_below="@+id/comment_list_1"-->
-        <!--android:layout_alignParentRight="true"-->
-        <!--android:background="@color/colorButton"-->
-        <!--android:textColor="@color/colorPrimaryText"-->
-        <!--android:text="@string/view_comments" />-->
+        <EditText
+            android:id="@+id/input_circle_description"
+            android:textSize="30sp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/input_circle_name"
+            android:hint="Circle Description" />
 
-    <TextView
-        android:id="@+id/post_item_2"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_below="@+id/button_submit_location_1"
-        android:textSize="25sp" />
+        <TextView
+            android:id="@+id/invalid"
+            android:textSize="30sp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/input_circle_description" />
 
-    <ListView
-        android:id="@+id/comment_list_2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/post_item_2" />
+        <Button
+            android:id="@+id/button_update_circle"
+            android:layout_width="wrap_content"
+            android:layout_height="30sp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentBottom="true"
+            android:textSize="20sp"
+            android:background="@color/colorButtonSubmit"
+            android:textColor="@color/colorPrimaryText"
+            android:text="Update Circle" />
 
-    <Button
-        android:id="@+id/button_submit_location_2"
-        android:layout_width="150dp"
-        android:layout_height="20dp"
-        android:layout_below="@+id/comment_list_2"
-        android:layout_alignParentLeft="true"
-        android:background="@color/colorButtonSubmit"
-        android:textColor="@color/colorPrimaryText"
-        android:text="@string/share_location" />
-
-    <!--<Button-->
-        <!--android:id="@+id/button_view_comments_2"-->
-        <!--android:layout_width="150dp"-->
-        <!--android:layout_height="20dp"-->
-        <!--android:layout_below="@+id/comment_list_2"-->
-        <!--android:layout_alignParentRight="true"-->
-        <!--android:background="@color/colorButton"-->
-        <!--android:textColor="@color/colorPrimaryText"-->
-        <!--android:text="@string/view_comments" />-->
-
-    <TextView
-        android:id="@+id/post_item_3"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_below="@+id/button_submit_location_2"
-        android:textSize="25sp" />
-
-    <ListView
-        android:id="@+id/comment_list_3"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/post_item_3" />
-
-    <Button
-        android:id="@+id/button_submit_location_3"
-        android:layout_width="150dp"
-        android:layout_height="20dp"
-        android:layout_below="@+id/comment_list_3"
-        android:layout_alignParentLeft="true"
-        android:background="@color/colorButtonSubmit"
-        android:textColor="@color/colorPrimaryText"
-        android:text="@string/share_location" />
-
-    <!--<Button-->
-        <!--android:id="@+id/button_view_comments_3"-->
-        <!--android:layout_width="150dp"-->
-        <!--android:layout_height="20dp"-->
-        <!--android:layout_below="@+id/comment_list_3"-->
-        <!--android:layout_alignParentRight="true"-->
-        <!--android:background="@color/colorButton"-->
-        <!--android:textColor="@color/colorPrimaryText"-->
-        <!--android:text="@string/view_comments" />-->
-
+        <Button
+            android:id="@+id/logout"
+            android:layout_width="wrap_content"
+            android:layout_height="30sp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:textSize="20sp"
+            android:background="@color/colorButtonLogout"
+            android:textColor="@color/colorPrimaryText"
+            android:text="Logout" />
 </RelativeLayout>

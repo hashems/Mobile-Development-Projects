@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/post_items"
+    android:id="@+id/comment_items"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingBottom="@dimen/activity_vertical_margin"
@@ -11,15 +11,26 @@
     tools:context="hashems.project.APIActivity">
 
     <TextView
-        android:id="@+id/post_item_title"
+        android:id="@+id/prompt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textSize="25sp"
+        android:text="Gimme a description:" />
+
+    <EditText
+        android:id="@+id/input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/prompt"
         android:textSize="25sp" />
 
-    <TextView
-        android:id="@+id/post_item_published"
+    <Button
+        android:id="@+id/button_update_cirle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/post_item_title"
-        android:textSize="15sp" />
+        android:layout_alignParentBottom="true"
+        android:textSize="30sp"
+        android:background="@color/colorButton"
+        android:textColor="@color/colorPrimaryText"
+        android:text="Submit" />
 </RelativeLayout>

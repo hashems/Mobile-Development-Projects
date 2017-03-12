@@ -1,26 +1,43 @@
 package hashems.project;
 
+// CITE: CS 496 Week 7 Content (various)
 // CITE: CS 496 Week 8 Content (various)
 // CITE: CS 496 Piazza Forums (various)
 // CITE: Android OAuth Documentation (various)
 // CITE: OkHttp Documentation (various)
 
+import android.app.Dialog;
 import android.app.PendingIntent;
+import android.content.ClipData;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.TextView;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.vision.text.Text;
 
 import net.openid.appauth.AuthState;
 import net.openid.appauth.AuthorizationException;
@@ -48,27 +65,33 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+import android.Manifest;
+import android.widget.TextView;
 
-public class APIActivity extends AppCompatActivity {
+
+public class APIActivity extends AppCompatActivity implements
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private String API_key = "AIzaSyBjI0EQp8Og_X69WK3xYrIN8q2SPcX-hKo";
     private String client_ID = "234170585101-i50nt19hn2bqn8j02j0738dbtig6ne0i.apps.googleusercontent.com";
-    private String userId = "114062465972706991937";
-
-    private List<Map<String, String>> posts = new ArrayList<Map<String, String>>();
-    private List<TextView> postViews = new ArrayList<TextView>();
-
-    private ArrayList<String> postIds = new ArrayList<String>();
-    private String activityId;
-
-    private List<Button> locationButtons = new ArrayList<Button>();
-    private List<Button> commentButtons = new ArrayList<Button>();
-
-    private List<ListView> commentLists = new ArrayList<ListView>();
+    private String userId;
 
     private AuthorizationService mAuthorizationService;
     private AuthState mAuthState;
+    private AuthState auth = null;
+    private String mAccessToken = "";
     private OkHttpClient mOkHttpClient;
+
+    private GoogleApiClient mGoogleApiClient;
+
+    private static final int LOCATION_PERMISSION_RESULT = 29;
+    private LocationRequest mLocationRequest;
+    private LocationListener mLocationListener;
+
+    private List<String> circleNames = new ArrayList<String>();
+    private List<String> circleIds = new ArrayList<String>();
+
+    private String location_post = "";
 
 
     @Override
@@ -78,7 +101,36 @@ public class APIActivity extends AppCompatActivity {
         setContentView(R.layout.activity_api);
         mAuthorizationService = new AuthorizationService(this);
 
-        // Submit Google+ Posts
+
+        // Location setup
+        mLocationRequest = LocationRequest.create();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setInterval(5000);
+        mLocationRequest.setFastestInterval(5000);
+
+        if (mGoogleApiClient == null) {
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(LocationServices.API)
+                    .build();
+        }
+
+        mLocationListener = new LocationListener() {
+
+            @Override
+            public void onLocationChanged(Location location) {
+                if (location != null) {
+                    location_post = "Hello from " + String.valueOf(location.getLatitude()) + ", " + String.valueOf(location.getLongitude()) + "!";
+                }
+                else {
+                    location_post = "Hello from... Mars? No location found!";
+                }
+            }
+        };
+
+
+        // Add Google+ Posts with Location Data
         Button submit_posts_button = (Button) findViewById(R.id.button_submit_posts);
         submit_posts_button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -88,28 +140,49 @@ public class APIActivity extends AppCompatActivity {
                         @Override
                         public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException e) {
                             if (e == null) {
+                                mAccessToken = auth.getAccessToken();
                                 mOkHttpClient = new OkHttpClient();
-                                HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/people/114062465972706991937/activities");
-                                reqUrl = reqUrl.newBuilder().addQueryParameter("key", "AIzaSyBjI0EQp8Og_X69WK3xYrIN8q2SPcX-hKo").build();
-                                MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-                                EditText input = (EditText) findViewById(R.id.input);
-                                String postContent = input.getText().toString();
-                                String json = "{  \"object\": { \"originalContent\": \"" + postContent + "\" }, \"access\": { \"domainRestricted\": true } }";
-                                RequestBody body = RequestBody.create(JSON, json);
+                                HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/people/me/");
+                                reqUrl = reqUrl.newBuilder().addQueryParameter("key", API_key).build();
                                 Request request = new Request.Builder()
                                         .url(reqUrl)
-                                        .addHeader("Authorization", "Bearer " + accessToken)
-                                        .post(body)
+                                        .addHeader("Authorization", "Bearer " + mAccessToken)
                                         .build();
                                 mOkHttpClient.newCall(request).enqueue(new Callback() {
                                     @Override
                                     public void onFailure(Call call, IOException e) {
                                         e.printStackTrace();
                                     }
-
                                     @Override
                                     public void onResponse(Call call, Response response) throws IOException {
                                         String r = response.body().string();
+                                        try {
+                                            JSONObject j = new JSONObject(r);
+                                            userId = j.getString("id");
+                                            String circlesUrl = "https://www.googleapis.com/plusDomains/v1/people/" + userId + "/activities";
+                                            HttpUrl reqUrl = HttpUrl.parse(circlesUrl);
+                                            reqUrl = reqUrl.newBuilder().addQueryParameter("key", API_key).build();
+                                            MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+                                            String json = "{  \"object\": { \"originalContent\": \"" + location_post + "\" }, \"access\": { \"domainRestricted\": true } }";
+                                            RequestBody body = RequestBody.create(JSON, json);
+                                            Request request = new Request.Builder()
+                                                    .url(reqUrl)
+                                                    .addHeader("Authorization", "Bearer " + mAccessToken)
+                                                    .post(body)
+                                                    .build();
+                                            mOkHttpClient.newCall(request).enqueue(new Callback() {
+                                                @Override
+                                                public void onFailure(Call call, IOException e) {
+                                                    e.printStackTrace();
+                                                }
+                                                @Override
+                                                public void onResponse(Call call, Response response) throws IOException {
+                                                    String r = response.body().string();
+                                                }
+                                            });
+                                        } catch (JSONException e1) {
+                                            e1.printStackTrace();
+                                        }
                                     }
                                 });
                             }
@@ -134,7 +207,7 @@ public class APIActivity extends AppCompatActivity {
                             if (e == null) {
                                 mOkHttpClient = new OkHttpClient();
                                 HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/people/me/activities/user");
-                                reqUrl = reqUrl.newBuilder().addQueryParameter("key", "AIzaSyBjI0EQp8Og_X69WK3xYrIN8q2SPcX-hKo").build();
+                                reqUrl = reqUrl.newBuilder().addQueryParameter("key", API_key).build();
                                 Request request = new Request.Builder()
                                         .url(reqUrl)
                                         .addHeader("Authorization", "Bearer " + accessToken)
@@ -151,33 +224,24 @@ public class APIActivity extends AppCompatActivity {
                                         try {
                                             JSONObject j = new JSONObject(r);
                                             JSONArray items = j.getJSONArray("items");
-//                                            List<Map<String, String>> posts = new ArrayList<Map<String, String>>();
-                                            postViews.add((TextView) findViewById(R.id.post_item_1));
-                                            postViews.add((TextView) findViewById(R.id.post_item_2));
-                                            postViews.add((TextView) findViewById(R.id.post_item_3));
+                                            List<Map<String, String>> posts = new ArrayList<Map<String, String>>();
                                             for (int i = 0; i < 3; i++) {
                                                 HashMap<String, String> m = new HashMap<String, String>();
                                                 m.put("title", items.getJSONObject(i).getString("title"));
-//                                                m.put("published", items.getJSONObject(i).getString("published"));
                                                 posts.add(m);
-                                                postIds.add(items.getJSONObject(i).getString("id"));
-
-                                                // Populate views
-                                                postViews.get(i).setText(posts.get(i).toString());
                                             }
-//                                            final SimpleAdapter postAdapter = new SimpleAdapter(
-//                                                    APIActivity.this,
-//                                                    posts,
-//                                                    R.layout.post_item,
-//                                                    new String[]{"title"},
-//                                                    new int[]{R.id.post_item_title, R.id.post_item_date});
-//                                                    new int[]{R.id.post_item_title});
-//                                            runOnUiThread(new Runnable() {
-//                                                @Override
-//                                                public void run() {
-//                                                    ((ListView) findViewById(R.id.posts_list)).setAdapter(postAdapter);
-//                                                }
-//                                            });
+                                            final SimpleAdapter postAdapter = new SimpleAdapter(
+                                                    APIActivity.this,
+                                                    posts,
+                                                    R.layout.post_item,
+                                                    new String[]{"title"},
+                                                    new int[]{R.id.post_item_title});
+                                            runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    ((ListView) findViewById(R.id.posts_list)).setAdapter(postAdapter);
+                                                }
+                                            });
                                         } catch (JSONException e1) {
                                             e1.printStackTrace();
                                         }
@@ -193,499 +257,214 @@ public class APIActivity extends AppCompatActivity {
         });
 
 
-        for(int i = 0; i < 3; i++) {
-            activityId = postIds.get(i);
-            locationButtons.get(i).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    try {
-                        mAuthState.performActionWithFreshTokens(mAuthorizationService, new AuthState.AuthStateAction() {
-                            @Override
-                            public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException e) {
-                                if (e == null) {
-                                    mOkHttpClient = new OkHttpClient();
-                                    HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/people/" + activityId + "/activities");
-//                                    HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/people/114062465972706991937/activities");
-                                    reqUrl = reqUrl.newBuilder().addQueryParameter("key", "AIzaSyBjI0EQp8Og_X69WK3xYrIN8q2SPcX-hKo").build();
-                                    MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-//                                String location_comment = "Hello from " + location.getLatitude() + ", " + location.getLongitude() = "!";
-                                    String location_comment = "Hello from 44.5, -123.2!";
-                                    String json = "{  \"object\": { \"originalContent\": \"" + location_comment + "\" }, \"access\": { \"domainRestricted\": true } }";
-                                    RequestBody body = RequestBody.create(JSON, json);
-                                    Request request = new Request.Builder()
-                                            .url(reqUrl)
-                                            .addHeader("Authorization", "Bearer " + accessToken)
-                                            .post(body)
-                                            .build();
-                                    mOkHttpClient.newCall(request).enqueue(new Callback() {
-                                        @Override
-                                        public void onFailure(Call call, IOException e) {
-                                            e.printStackTrace();
-                                        }
-
-                                        @Override
-                                        public void onResponse(Call call, Response response) throws IOException {
-                                            String r = response.body().string();
-                                        }
-                                    });
-                                }
-                            }
-                        });
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-        }
-
-
-        commentLists.add((ListView) findViewById(R.id.comment_list_1));
-        commentLists.add((ListView) findViewById(R.id.comment_list_2));
-        commentLists.add((ListView) findViewById(R.id.comment_list_3));
-        for(int i = 0; i < 3; i++) {
-            activityId = postIds.get(i);
-            final ListView commentListView = commentLists.get(i);
-            commentButtons.get(i).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    try {
-                        mAuthState.performActionWithFreshTokens(mAuthorizationService, new AuthState.AuthStateAction() {
-                            @Override
-                            public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException e) {
-                                if (e == null) {
-                                    mOkHttpClient = new OkHttpClient();
-                                    HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/activities/" + activityId + "/comments");
-//                                    HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/activities/z12rsh3hyruvwpt1j22fspphauzptr3ds/comments");
-                                    reqUrl = reqUrl.newBuilder().addQueryParameter("key", "AIzaSyBjI0EQp8Og_X69WK3xYrIN8q2SPcX-hKo").build();
-                                    Request request = new Request.Builder()
-                                            .url(reqUrl)
-                                            .addHeader("Authorization", "Bearer " + accessToken)
-                                            .build();
-                                    mOkHttpClient.newCall(request).enqueue(new Callback() {
-                                        @Override
-                                        public void onFailure(Call call, IOException e) {
-                                            e.printStackTrace();
-                                        }
-
-                                        @Override
-                                        public void onResponse(Call call, Response response) throws IOException {
-                                            String r = response.body().string();
-//                                             DEBUG
-                                            Log.d("COMMENT RESPONSE", r);
-                                            try {
-                                                JSONObject j = new JSONObject(r);
-                                                JSONArray items = j.getJSONArray("items");
-                                                List<Map<String, String>> comments = new ArrayList<Map<String, String>>();
-                                                for(int i = 0; i < 3; i++) {
-                                                    HashMap<String, String> c = new HashMap<String, String>();
-//                                                     DEBUG
-                                                    Log.d("COMMENT", items.getJSONObject(i).getJSONObject("object").getString("originalContent"));
-                                                    c.put("content", items.getJSONObject(i).getJSONObject("object").getString("originalContent"));
-                                                    comments.add(c);
+        // View Google+ Circles
+        Button get_circles_button = (Button) findViewById(R.id.button_get_circles);
+        get_circles_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    mAuthState.performActionWithFreshTokens(mAuthorizationService, new AuthState.AuthStateAction() {
+                        @Override
+                        public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException e) {
+                            if (e == null) {
+                                mAccessToken = auth.getAccessToken();
+                                mOkHttpClient = new OkHttpClient();
+                                HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/people/me/");
+                                reqUrl = reqUrl.newBuilder().addQueryParameter("key", API_key).build();
+                                Request request = new Request.Builder()
+                                        .url(reqUrl)
+                                        .addHeader("Authorization", "Bearer " + mAccessToken)
+                                        .build();
+                                mOkHttpClient.newCall(request).enqueue(new Callback() {
+                                    @Override
+                                    public void onFailure(Call call, IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                    @Override
+                                    public void onResponse(Call call, Response response) throws IOException {
+                                        String r = response.body().string();
+                                        try {
+                                            JSONObject j = new JSONObject(r);
+                                            userId = j.getString("id");
+                                            String circlesUrl = "https://www.googleapis.com/plusDomains/v1/people/" + userId + "/circles";
+                                            HttpUrl reqUrl = HttpUrl.parse(circlesUrl);
+                                            reqUrl = reqUrl.newBuilder().addQueryParameter("key", API_key).build();
+                                            Request request = new Request.Builder()
+                                                    .url(reqUrl)
+                                                    .addHeader("Authorization", "Bearer " + mAccessToken)
+                                                    .build();
+                                            mOkHttpClient.newCall(request).enqueue(new Callback() {
+                                                @Override
+                                                public void onFailure(Call call, IOException e) {
+                                                    e.printStackTrace();
                                                 }
-                                                final SimpleAdapter commentAdapter = new SimpleAdapter(
-                                                        APIActivity.this,
-                                                        comments,
-                                                        R.layout.comment_item,
-                                                        new String[]{"originalContent"},
-                                                        new int[]{R.id.comment_item_content});
-                                                runOnUiThread(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        commentListView.setAdapter(commentAdapter);
+
+                                                @Override
+                                                public void onResponse(Call call, Response response) throws IOException {
+                                                    String r = response.body().string();
+                                                    Log.d("CIRCLES", r);
+                                                    try {
+                                                        JSONObject j = new JSONObject(r);
+                                                        JSONArray items = j.getJSONArray("items");
+                                                         List<Map<String, String>> circles = new ArrayList<Map<String, String>>();
+                                                        for (int i = 0; i < items.length(); i++) {
+                                                            HashMap<String, String> m = new HashMap<String, String>();
+                                                            m.put("displayName", items.getJSONObject(i).getString("displayName"));
+                                                            m.put("description", items.getJSONObject(i).getString("description"));
+                                                            circles.add(m);
+                                                            circleNames.add(items.getJSONObject(i).getString("displayName"));
+                                                            circleIds.add(items.getJSONObject(i).getString("id"));
+                                                        }
+                                                        final SimpleAdapter circleAdapter = new SimpleAdapter(
+                                                                APIActivity.this,
+                                                                circles,
+                                                                R.layout.circle_item,
+                                                                new String[]{"displayName", "description"},
+                                                                new int[]{R.id.circle_item_displayName, R.id.circle_item_description});
+                                                        runOnUiThread(new Runnable() {
+                                                            @Override
+                                                            public void run() {
+                                                                ((ListView) findViewById(R.id.circles_list)).setAdapter(circleAdapter);
+                                                            }
+                                                        });
+                                                    } catch (JSONException e1) {
+                                                        e1.printStackTrace();
                                                     }
-                                                });
-                                            } catch (JSONException e1) {
-                                                e1.printStackTrace();
-                                            }
+                                                }
+                                            });
+                                        } catch (JSONException e1) {
+                                            e1.printStackTrace();
                                         }
-                                    });
-                                }
+                                    }
+                                });
                             }
-                        });
-                    } catch (Exception e){
-                        e.printStackTrace();
-                    }
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            });
-        }
+            }
+        });
+
+
+        Button update_circle_button = (Button) findViewById(R.id.button_update_circle);
+        update_circle_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    final String circleNameInput = ((EditText) findViewById(R.id.input_circle_name)).getText().toString();
+                    final String circleDescriptionInput = ((EditText) findViewById(R.id.input_circle_description)).getText().toString();
+
+                    mAuthState.performActionWithFreshTokens(mAuthorizationService, new AuthState.AuthStateAction() {
+                        @Override
+                        public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException e) {
+                            if (e == null) {
+                                String circleId = "";
+                                for(int i = 0; i < circleNames.size(); i++) {
+                                    if(circleNameInput.equals(circleNames.get(i))){
+                                        circleId = circleIds.get(i);
+                                    }
+                                    else {
+                                        ((TextView) findViewById(R.id.invalid)).setText("That Circle doesn't exist.");
+                                    }
+                                }
+                                String updateUrl = "https://www.googleapis.com/plusDomains/v1/circles/" + circleId;
+                                Log.d("UPDATE URL", updateUrl);
+                                HttpUrl reqUrl = HttpUrl.parse(updateUrl);
+                                reqUrl = reqUrl.newBuilder().addQueryParameter("key", API_key).build();
+                                MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+                                String json = "{  \"object\": { \"description\": \"" + circleDescriptionInput + "\" } }";
+                                RequestBody body = RequestBody.create(JSON, json);
+                                Request request = new Request.Builder()
+                                        .url(reqUrl)
+                                        .addHeader("Authorization", "Bearer " + mAccessToken)
+                                        .post(body)
+                                        .build();
+                                mOkHttpClient.newCall(request).enqueue(new Callback() {
+                                    @Override
+                                    public void onFailure(Call call, IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                    @Override
+                                    public void onResponse(Call call, Response response) throws IOException {
+                                        String r = response.body().string();
+                                        Log.d("UPDATE RESPONSE", r);
+                                    }
+                                });
+                            }
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
 
-//    public void submitLocationOnClick(View v) {
-//        try{
-//            mAuthState.performActionWithFreshTokens(mAuthorizationService, new AuthState.AuthStateAction() {
-//                @Override
-//                public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException e) {
-//                    if (e == null) {
-//                        mOkHttpClient = new OkHttpClient();
-//                         HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/people/" + userId + "/activities");
-//                        HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/people/114062465972706991937/activities");
-//                        reqUrl = reqUrl.newBuilder().addQueryParameter("key", "AIzaSyBjI0EQp8Og_X69WK3xYrIN8q2SPcX-hKo").build();
-//                        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-//                         String location_comment = "Hello from " + location.getLatitude() + ", " + location.getLongitude() = "!";
-//                        String location_comment = "Hello from 44.5, -123.2!";
-//                        String json = "{  \"object\": { \"originalContent\": \"" + location_comment + "\" }, \"access\": { \"domainRestricted\": true } }";
-//                        RequestBody body = RequestBody.create(JSON, json);
-//                        Request request = new Request.Builder()
-//                                .url(reqUrl)
-//                                .addHeader("Authorization", "Bearer " + accessToken)
-//                                .post(body)
-//                                .build();
-//                        mOkHttpClient.newCall(request).enqueue(new Callback() {
-//                            @Override
-//                            public void onFailure(Call call, IOException e) {
-//                                e.printStackTrace();
-//                            }
-//
-//                            @Override
-//                            public void onResponse(Call call, Response response) throws IOException {
-//                                String r = response.body().string();
-//                            }
-//                        });
-//                    }
-//                }
-//            });
-//        } catch (Exception e){
-//            e.printStackTrace();
-//        }
-//    }
 
-
-        // Share Location as Comment on Post
-//        Button submit_location_button = (Button) findViewById(R.id.button_submit_location);
-//        submit_location_button.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                try {
-//                    mAuthState.performActionWithFreshTokens(mAuthorizationService, new AuthState.AuthStateAction() {
-//                        @Override
-//                        public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException e) {
-//                            if (e == null) {
-//                                mOkHttpClient = new OkHttpClient();
-//                                HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/people/" + userId + "/activities");
-//                                HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/people/114062465972706991937/activities");
-//                                reqUrl = reqUrl.newBuilder().addQueryParameter("key", "AIzaSyBjI0EQp8Og_X69WK3xYrIN8q2SPcX-hKo").build();
-//                                MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-//                                String location_comment = "Hello from " + location.getLatitude() + ", " + location.getLongitude() = "!";
-//                                String location_comment = "Hello from 44.5, -123.2!";
-//                                String json = "{  \"object\": { \"originalContent\": \"" + location_comment + "\" }, \"access\": { \"domainRestricted\": true } }";
-//                                RequestBody body = RequestBody.create(JSON, json);
-//                                Request request = new Request.Builder()
-//                                        .url(reqUrl)
-//                                        .addHeader("Authorization", "Bearer " + accessToken)
-//                                        .post(body)
-//                                        .build();
-//                                mOkHttpClient.newCall(request).enqueue(new Callback() {
-//                                    @Override
-//                                    public void onFailure(Call call, IOException e) {
-//                                        e.printStackTrace();
-//                                    }
-//
-//                                    @Override
-//                                    public void onResponse(Call call, Response response) throws IOException {
-//                                        String r = response.body().string();
-//                                    }
-//                                });
-//                            }
-//                        }
-//                    });
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        });
-//    }
-
-
-    // Populate post views
-//    public void populatePostViews() {
-//        postViews.add((TextView) findViewById(R.id.post_item_1));
-//        postViews.add((TextView) findViewById(R.id.post_item_2));
-//        postViews.add((TextView) findViewById(R.id.post_item_3));
-//
-//        for(int i = 0; i < 3; i++) {
-//            postViews.get(i).setText(posts.get(i).toString());
-//        }
-//
-//        locationButtonEvents();
-//        commentButtonEvents();
-//    }
-
-
-    // Location Button Event Listeners
-//    public void locationButtonEvents() {
-//        for(int i = 0; i < 3; i++) {
-//            activityId = postIds.get(i);
-//            locationButtons.get(i).setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//                    try {
-//                        mAuthState.performActionWithFreshTokens(mAuthorizationService, new AuthState.AuthStateAction() {
-//                            @Override
-//                            public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException e) {
-//                                if (e == null) {
-//                                    mOkHttpClient = new OkHttpClient();
-//                                    HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/people/" + activityId + "/activities");
-//                                    HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/people/114062465972706991937/activities");
-//                                    reqUrl = reqUrl.newBuilder().addQueryParameter("key", "AIzaSyBjI0EQp8Og_X69WK3xYrIN8q2SPcX-hKo").build();
-//                                    MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-//                                String location_comment = "Hello from " + location.getLatitude() + ", " + location.getLongitude() = "!";
-//                                    String location_comment = "Hello from 44.5, -123.2!";
-//                                    String json = "{  \"object\": { \"originalContent\": \"" + location_comment + "\" }, \"access\": { \"domainRestricted\": true } }";
-//                                    RequestBody body = RequestBody.create(JSON, json);
-//                                    Request request = new Request.Builder()
-//                                            .url(reqUrl)
-//                                            .addHeader("Authorization", "Bearer " + accessToken)
-//                                            .post(body)
-//                                            .build();
-//                                    mOkHttpClient.newCall(request).enqueue(new Callback() {
-//                                        @Override
-//                                        public void onFailure(Call call, IOException e) {
-//                                            e.printStackTrace();
-//                                        }
-//
-//                                        @Override
-//                                        public void onResponse(Call call, Response response) throws IOException {
-//                                            String r = response.body().string();
-//                                        }
-//                                    });
-//                                }
-//                            }
-//                        });
-//                    } catch (Exception e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            });
-//        }
-//    }
-
-
-    // Comment Button Event Listeners
-//    public void commentButtonEvents() {
-//        commentLists.add((ListView) findViewById(R.id.comment_list_1));
-//        commentLists.add((ListView) findViewById(R.id.comment_list_2));
-//        commentLists.add((ListView) findViewById(R.id.comment_list_3));
-//
-//        for(int i = 0; i < 3; i++) {
-//            activityId = postIds.get(i);
-//            final ListView commentListView = commentLists.get(i);
-//            commentButtons.get(i).setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//                    try {
-//                        mAuthState.performActionWithFreshTokens(mAuthorizationService, new AuthState.AuthStateAction() {
-//                            @Override
-//                            public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException e) {
-//                                if (e == null) {
-//                                    mOkHttpClient = new OkHttpClient();
-//                                     HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/activities/" + activityId + "/comments");
-////                                    HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/activities/z12rsh3hyruvwpt1j22fspphauzptr3ds/comments");
-//                                    reqUrl = reqUrl.newBuilder().addQueryParameter("key", "AIzaSyBjI0EQp8Og_X69WK3xYrIN8q2SPcX-hKo").build();
-//                                    Request request = new Request.Builder()
-//                                            .url(reqUrl)
-//                                            .addHeader("Authorization", "Bearer " + accessToken)
-//                                            .build();
-//                                    mOkHttpClient.newCall(request).enqueue(new Callback() {
-//                                        @Override
-//                                        public void onFailure(Call call, IOException e) {
-//                                            e.printStackTrace();
-//                                        }
-//
-//                                        @Override
-//                                        public void onResponse(Call call, Response response) throws IOException {
-//                                            String r = response.body().string();
-////                                             DEBUG
-//                                            Log.d("COMMENT RESPONSE", r);
-//                                            try {
-//                                                JSONObject j = new JSONObject(r);
-//                                                JSONArray items = j.getJSONArray("items");
-//                                                List<Map<String, String>> comments = new ArrayList<Map<String, String>>();
-//                                                for(int i = 0; i < 3; i++) {
-//                                                    HashMap<String, String> c = new HashMap<String, String>();
-////                                                     DEBUG
-//                                                    Log.d("COMMENT", items.getJSONObject(i).getJSONObject("object").getString("originalContent"));
-//                                                    c.put("content", items.getJSONObject(i).getJSONObject("object").getString("originalContent"));
-//                                                    comments.add(c);
-//                                                }
-//                                                final SimpleAdapter commentAdapter = new SimpleAdapter(
-//                                                        APIActivity.this,
-//                                                        comments,
-//                                                        R.layout.comment_item,
-//                                                        new String[]{"originalContent"},
-//                                                        new int[]{R.id.comment_item_content});
-//                                                runOnUiThread(new Runnable() {
-//                                                    @Override
-//                                                    public void run() {
-//                                                        commentListView.setAdapter(commentAdapter);
-//                                                    }
-//                                                });
-//                                            } catch (JSONException e1) {
-//                                                e1.printStackTrace();
-//                                            }
-//                                        }
-//                                    });
-//                                }
-//                            }
-//                        });
-//                    } catch (Exception e){
-//                        e.printStackTrace();
-//                    }
-//                }
-//            });
-//        }
-//    }
-
-
-        // View Location as Comment on Post
-//        private ArrayList<>
-
-
-//    public void viewCommentsOnClick(View v) {
-        // View comments for post
-//        try {
-//            mAuthState.performActionWithFreshTokens(mAuthorizationService, new AuthState.AuthStateAction() {
-//                @Override
-//                public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException e) {
-//                    if (e == null) {
-//                        mOkHttpClient = new OkHttpClient();
-//                            HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/activities/" + activityId + "/comments");
-//                        HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/activities/z12rsh3hyruvwpt1j22fspphauzptr3ds/comments");
-//                        reqUrl = reqUrl.newBuilder().addQueryParameter("key", "AIzaSyBjI0EQp8Og_X69WK3xYrIN8q2SPcX-hKo").build();
-//                        Request request = new Request.Builder()
-//                                .url(reqUrl)
-//                                .addHeader("Authorization", "Bearer " + accessToken)
-//                                .build();
-//                        mOkHttpClient.newCall(request).enqueue(new Callback() {
-//                            @Override
-//                            public void onFailure(Call call, IOException e) {
-//                                e.printStackTrace();
-//                            }
-//
-//                            @Override
-//                            public void onResponse(Call call, Response response) throws IOException {
-//                                String r = response.body().string();
-//                                    DEBUG
-//                                Log.d("COMMENT RESPONSE", r);
-//                                try {
-//                                    JSONObject j = new JSONObject(r);
-//                                    JSONArray items = j.getJSONArray("items");
-//                                    List<Map<String, String>> comments = new ArrayList<Map<String, String>>();
-//                                    for (int i = 0; i < 3; i++) {
-//                                        HashMap<String, String> c = new HashMap<String, String>();
-//                                            DEBUG
-//                                        Log.d("COMMENT", items.getJSONObject(i).getJSONObject("object").getString("originalContent"));
-//                                        c.put("content", items.getJSONObject(i).getJSONObject("object").getString("originalContent"));
-//                                        comments.add(c);
-//                                    }
-//                                    final SimpleAdapter commentAdapter = new SimpleAdapter(
-//                                            APIActivity.this,
-//                                            comments,
-//                                            R.layout.comment_item,
-//                                            new String[]{"originalContent"},
-//                                            new int[]{R.id.comment_item_content});
-//                                    runOnUiThread(new Runnable() {
-//                                        @Override
-//                                        public void run() {
-//                                            ((ListView) findViewById(R.id.comments_list)).setAdapter(commentAdapter);
-//                                        }
-//                                    });
-//                                } catch (JSONException e1) {
-//                                    e1.printStackTrace();
-//                                }
-//                            }
-//                        });
-//                    }
-//                }
-//            });
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-
-
-//        Button view_location_button = (Button) findViewById(R.id.button_view_comments);
-//        view_location_button.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                 View comments for post
-//                try{
-//                    mAuthState.performActionWithFreshTokens(mAuthorizationService, new AuthState.AuthStateAction() {
-//                        @Override
-//                        public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException e) {
-//                            if (e == null) {
-//                                mOkHttpClient = new OkHttpClient();
-//                                 HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/activities/" + activityId + "/comments");
-//                                HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/activities/z12rsh3hyruvwpt1j22fspphauzptr3ds/comments");
-//                                reqUrl = reqUrl.newBuilder().addQueryParameter("key", "AIzaSyBjI0EQp8Og_X69WK3xYrIN8q2SPcX-hKo").build();
-//                                Request request = new Request.Builder()
-//                                        .url(reqUrl)
-//                                        .addHeader("Authorization", "Bearer " + accessToken)
-//                                        .build();
-//                                mOkHttpClient.newCall(request).enqueue(new Callback() {
-//                                    @Override
-//                                    public void onFailure(Call call, IOException e) {
-//                                        e.printStackTrace();
-//                                    }
-//
-//                                    @Override
-//                                    public void onResponse(Call call, Response response) throws IOException {
-//                                        String r = response.body().string();
-//                                         DEBUG
-//                                        Log.d("COMMENT RESPONSE", r);
-//                                        try {
-//                                            JSONObject j = new JSONObject(r);
-//                                            JSONArray items = j.getJSONArray("items");
-//                                            List<Map<String, String>> comments = new ArrayList<Map<String, String>>();
-//                                            for(int i = 0; i < 3; i++) {
-//                                                HashMap<String, String> c = new HashMap<String, String>();
-//                                                 DEBUG
-//                                                Log.d("COMMENT", items.getJSONObject(i).getJSONObject("object").getString("originalContent"));
-//                                                c.put("content", items.getJSONObject(i).getJSONObject("object").getString("originalContent"));
-//                                                comments.add(c);
-//                                            }
-//                                            final SimpleAdapter commentAdapter = new SimpleAdapter(
-//                                                    APIActivity.this,
-//                                                    comments,
-//                                                    R.layout.comment_item,
-//                                                    new String[]{"originalContent"},
-//                                                    new int[]{R.id.comment_item_content});
-//                                            runOnUiThread(new Runnable() {
-//                                                @Override
-//                                                public void run() {
-//                                                    ((ListView)findViewById(R.id.comments_list)).setAdapter(commentAdapter);
-//                                                }
-//                                            });
-//                                        } catch (JSONException e1) {
-//                                            e1.printStackTrace();
-//                                        }
-//                                    }
-//                                });
-//                            }
-//                        }
-//                    });
-//                } catch (Exception e){
-//                    e.printStackTrace();
-//                }
-//            }
-//        });
-//    }
-
+    // Location stuff
     @Override
     protected void onStart() {
+        mGoogleApiClient.connect();
         mAuthState = getOrCreateAuthState();
         super.onStart();
     }
 
+    @Override
+    protected void onStop() {
+        mGoogleApiClient.disconnect();
+        super.onStop();
+    }
 
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION_RESULT);
+            return;
+        }
+
+        updateLocation();
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.d("CONNECTION ERROR", "suspended");
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (requestCode == LOCATION_PERMISSION_RESULT) {
+            if (grantResults.length > 0) {
+                updateLocation();
+            }
+        }
+    }
+
+    public void updateLocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, mLocationListener);
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Dialog errDialog = GoogleApiAvailability.getInstance().getErrorDialog(this, connectionResult.getErrorCode(), 0);
+        errDialog.show();
+    }
+
+
+    // OAuth stuff
     AuthState getOrCreateAuthState() {
-        AuthState auth = null;
+        auth = null;
         SharedPreferences authPreference = getSharedPreferences("auth", MODE_PRIVATE);
         String stateJson = authPreference.getString("stateJson", null);
         if(stateJson != null) {
             try {
-//                Log.d("STATE", stateJson);
                 auth = AuthState.jsonDeserialize(stateJson);
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -701,15 +480,18 @@ public class APIActivity extends AppCompatActivity {
         }
     }
 
-
     void updateAuthState() {
         Uri authEndpoint = new Uri.Builder().scheme("https").authority("accounts.google.com").path("/o/oauth2/v2/auth").build();
         Uri tokenEndpoint = new Uri.Builder().scheme("https").authority("www.googleapis.com").path("/oauth2/v4/token").build();
         Uri redirect = new Uri.Builder().scheme("hashems.project").path("redirect").build();
 
         AuthorizationServiceConfiguration config = new AuthorizationServiceConfiguration(authEndpoint, tokenEndpoint, null);
-        AuthorizationRequest req = new AuthorizationRequest.Builder(config, "234170585101-i50nt19hn2bqn8j02j0738dbtig6ne0i.apps.googleusercontent.com", ResponseTypeValues.CODE, redirect)
-                .setScopes("https://www.googleapis.com/auth/plus.me", "https://www.googleapis.com/auth/plus.stream.write", "https://www.googleapis.com/auth/plus.stream.read")
+        AuthorizationRequest req = new AuthorizationRequest.Builder(config, client_ID, ResponseTypeValues.CODE, redirect)
+                .setScopes("https://www.googleapis.com/auth/plus.me",
+                        "https://www.googleapis.com/auth/plus.stream.read",
+                        "https://www.googleapis.com/auth/plus.stream.write",
+                        "https://www.googleapis.com/auth/plus.circles.read",
+                        "https://www.googleapis.com/auth/plus.circles.write")
                 .build();
 
         Intent authComplete = new Intent(this, AuthCompleteActivity.class);
