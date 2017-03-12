@@ -16,6 +16,12 @@
         android:layout_height="wrap_content"
         android:textSize="25sp" />
 
+    <TextView
+        android:id="@+id/post_item_comment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="25sp" />
+
     <!--<TextView-->
         <!--android:id="@+id/post_item_date"-->
         <!--android:layout_width="match_parent"-->
@@ -45,9 +51,9 @@
         android:textColor="@color/colorPrimaryText"
         android:text="@string/view_comments" />
 
-    <ListView
-        android:id="@+id/comments_list"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/button_submit_location" />
+    <!--<ListView-->
+        <!--android:id="@+id/comments_list"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_below="@+id/button_submit_location" />-->
 </RelativeLayout>

@@ -55,16 +55,20 @@ public class APIActivity extends AppCompatActivity {
     private String client_ID = "234170585101-i50nt19hn2bqn8j02j0738dbtig6ne0i.apps.googleusercontent.com";
     private String userId = "114062465972706991937";
 
-    private AuthorizationService mAuthorizationService;
-    private AuthState mAuthState;
-    private OkHttpClient mOkHttpClient;
+    private List<Map<String, String>> posts = new ArrayList<Map<String, String>>();
+    private List<TextView> postViews = new ArrayList<TextView>();
 
     private ArrayList<String> postIds = new ArrayList<String>();
     private String activityId;
 
+    private List<Button> locationButtons = new ArrayList<Button>();
+    private List<Button> commentButtons = new ArrayList<Button>();
 
-    Button submit_location_button = (Button) findViewById(R.id.button_submit_location);
+    private List<ListView> commentLists = new ArrayList<ListView>();
 
+    private AuthorizationService mAuthorizationService;
+    private AuthState mAuthState;
+    private OkHttpClient mOkHttpClient;
 
 
     @Override
@@ -147,26 +151,33 @@ public class APIActivity extends AppCompatActivity {
                                         try {
                                             JSONObject j = new JSONObject(r);
                                             JSONArray items = j.getJSONArray("items");
-                                            List<Map<String, String>> posts = new ArrayList<Map<String, String>>();
+//                                            List<Map<String, String>> posts = new ArrayList<Map<String, String>>();
+                                            postViews.add((TextView) findViewById(R.id.post_item_1));
+                                            postViews.add((TextView) findViewById(R.id.post_item_2));
+                                            postViews.add((TextView) findViewById(R.id.post_item_3));
                                             for (int i = 0; i < 3; i++) {
                                                 HashMap<String, String> m = new HashMap<String, String>();
                                                 m.put("title", items.getJSONObject(i).getString("title"));
 //                                                m.put("published", items.getJSONObject(i).getString("published"));
                                                 posts.add(m);
+                                                postIds.add(items.getJSONObject(i).getString("id"));
+
+                                                // Populate views
+                                                postViews.get(i).setText(posts.get(i).toString());
                                             }
-                                            final SimpleAdapter postAdapter = new SimpleAdapter(
-                                                    APIActivity.this,
-                                                    posts,
-                                                    R.layout.post_item,
-                                                    new String[]{"title"},
+//                                            final SimpleAdapter postAdapter = new SimpleAdapter(
+//                                                    APIActivity.this,
+//                                                    posts,
+//                                                    R.layout.post_item,
+//                                                    new String[]{"title"},
 //                                                    new int[]{R.id.post_item_title, R.id.post_item_date});
-                                                    new int[]{R.id.post_item_title, R.id.button_submit_location, R.id.button_view_comments});
-                                            runOnUiThread(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    ((ListView) findViewById(R.id.posts_list)).setAdapter(postAdapter);
-                                                }
-                                            });
+//                                                    new int[]{R.id.post_item_title});
+//                                            runOnUiThread(new Runnable() {
+//                                                @Override
+//                                                public void run() {
+//                                                    ((ListView) findViewById(R.id.posts_list)).setAdapter(postAdapter);
+//                                                }
+//                                            });
                                         } catch (JSONException e1) {
                                             e1.printStackTrace();
                                         }
@@ -180,7 +191,125 @@ public class APIActivity extends AppCompatActivity {
                 }
             }
         });
-//    }
+
+
+        for(int i = 0; i < 3; i++) {
+            activityId = postIds.get(i);
+            locationButtons.get(i).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    try {
+                        mAuthState.performActionWithFreshTokens(mAuthorizationService, new AuthState.AuthStateAction() {
+                            @Override
+                            public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException e) {
+                                if (e == null) {
+                                    mOkHttpClient = new OkHttpClient();
+                                    HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/people/" + activityId + "/activities");
+//                                    HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/people/114062465972706991937/activities");
+                                    reqUrl = reqUrl.newBuilder().addQueryParameter("key", "AIzaSyBjI0EQp8Og_X69WK3xYrIN8q2SPcX-hKo").build();
+                                    MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+//                                String location_comment = "Hello from " + location.getLatitude() + ", " + location.getLongitude() = "!";
+                                    String location_comment = "Hello from 44.5, -123.2!";
+                                    String json = "{  \"object\": { \"originalContent\": \"" + location_comment + "\" }, \"access\": { \"domainRestricted\": true } }";
+                                    RequestBody body = RequestBody.create(JSON, json);
+                                    Request request = new Request.Builder()
+                                            .url(reqUrl)
+                                            .addHeader("Authorization", "Bearer " + accessToken)
+                                            .post(body)
+                                            .build();
+                                    mOkHttpClient.newCall(request).enqueue(new Callback() {
+                                        @Override
+                                        public void onFailure(Call call, IOException e) {
+                                            e.printStackTrace();
+                                        }
+
+                                        @Override
+                                        public void onResponse(Call call, Response response) throws IOException {
+                                            String r = response.body().string();
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+
+
+        commentLists.add((ListView) findViewById(R.id.comment_list_1));
+        commentLists.add((ListView) findViewById(R.id.comment_list_2));
+        commentLists.add((ListView) findViewById(R.id.comment_list_3));
+        for(int i = 0; i < 3; i++) {
+            activityId = postIds.get(i);
+            final ListView commentListView = commentLists.get(i);
+            commentButtons.get(i).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    try {
+                        mAuthState.performActionWithFreshTokens(mAuthorizationService, new AuthState.AuthStateAction() {
+                            @Override
+                            public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException e) {
+                                if (e == null) {
+                                    mOkHttpClient = new OkHttpClient();
+                                    HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/activities/" + activityId + "/comments");
+//                                    HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/activities/z12rsh3hyruvwpt1j22fspphauzptr3ds/comments");
+                                    reqUrl = reqUrl.newBuilder().addQueryParameter("key", "AIzaSyBjI0EQp8Og_X69WK3xYrIN8q2SPcX-hKo").build();
+                                    Request request = new Request.Builder()
+                                            .url(reqUrl)
+                                            .addHeader("Authorization", "Bearer " + accessToken)
+                                            .build();
+                                    mOkHttpClient.newCall(request).enqueue(new Callback() {
+                                        @Override
+                                        public void onFailure(Call call, IOException e) {
+                                            e.printStackTrace();
+                                        }
+
+                                        @Override
+                                        public void onResponse(Call call, Response response) throws IOException {
+                                            String r = response.body().string();
+//                                             DEBUG
+                                            Log.d("COMMENT RESPONSE", r);
+                                            try {
+                                                JSONObject j = new JSONObject(r);
+                                                JSONArray items = j.getJSONArray("items");
+                                                List<Map<String, String>> comments = new ArrayList<Map<String, String>>();
+                                                for(int i = 0; i < 3; i++) {
+                                                    HashMap<String, String> c = new HashMap<String, String>();
+//                                                     DEBUG
+                                                    Log.d("COMMENT", items.getJSONObject(i).getJSONObject("object").getString("originalContent"));
+                                                    c.put("content", items.getJSONObject(i).getJSONObject("object").getString("originalContent"));
+                                                    comments.add(c);
+                                                }
+                                                final SimpleAdapter commentAdapter = new SimpleAdapter(
+                                                        APIActivity.this,
+                                                        comments,
+                                                        R.layout.comment_item,
+                                                        new String[]{"originalContent"},
+                                                        new int[]{R.id.comment_item_content});
+                                                runOnUiThread(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        commentListView.setAdapter(commentAdapter);
+                                                    }
+                                                });
+                                            } catch (JSONException e1) {
+                                                e1.printStackTrace();
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                    } catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+    }
 
 
 //    public void submitLocationOnClick(View v) {
@@ -224,54 +353,193 @@ public class APIActivity extends AppCompatActivity {
 
 
         // Share Location as Comment on Post
-        Button submit_location_button = (Button) findViewById(R.id.button_submit_location);
-        submit_location_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    mAuthState.performActionWithFreshTokens(mAuthorizationService, new AuthState.AuthStateAction() {
-                        @Override
-                        public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException e) {
-                            if (e == null) {
-                                mOkHttpClient = new OkHttpClient();
+//        Button submit_location_button = (Button) findViewById(R.id.button_submit_location);
+//        submit_location_button.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                try {
+//                    mAuthState.performActionWithFreshTokens(mAuthorizationService, new AuthState.AuthStateAction() {
+//                        @Override
+//                        public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException e) {
+//                            if (e == null) {
+//                                mOkHttpClient = new OkHttpClient();
 //                                HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/people/" + userId + "/activities");
-                                HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/people/114062465972706991937/activities");
-                                reqUrl = reqUrl.newBuilder().addQueryParameter("key", "AIzaSyBjI0EQp8Og_X69WK3xYrIN8q2SPcX-hKo").build();
-                                MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+//                                HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/people/114062465972706991937/activities");
+//                                reqUrl = reqUrl.newBuilder().addQueryParameter("key", "AIzaSyBjI0EQp8Og_X69WK3xYrIN8q2SPcX-hKo").build();
+//                                MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 //                                String location_comment = "Hello from " + location.getLatitude() + ", " + location.getLongitude() = "!";
-                                String location_comment = "Hello from 44.5, -123.2!";
-                                String json = "{  \"object\": { \"originalContent\": \"" + location_comment + "\" }, \"access\": { \"domainRestricted\": true } }";
-                                RequestBody body = RequestBody.create(JSON, json);
-                                Request request = new Request.Builder()
-                                        .url(reqUrl)
-                                        .addHeader("Authorization", "Bearer " + accessToken)
-                                        .post(body)
-                                        .build();
-                                mOkHttpClient.newCall(request).enqueue(new Callback() {
-                                    @Override
-                                    public void onFailure(Call call, IOException e) {
-                                        e.printStackTrace();
-                                    }
+//                                String location_comment = "Hello from 44.5, -123.2!";
+//                                String json = "{  \"object\": { \"originalContent\": \"" + location_comment + "\" }, \"access\": { \"domainRestricted\": true } }";
+//                                RequestBody body = RequestBody.create(JSON, json);
+//                                Request request = new Request.Builder()
+//                                        .url(reqUrl)
+//                                        .addHeader("Authorization", "Bearer " + accessToken)
+//                                        .post(body)
+//                                        .build();
+//                                mOkHttpClient.newCall(request).enqueue(new Callback() {
+//                                    @Override
+//                                    public void onFailure(Call call, IOException e) {
+//                                        e.printStackTrace();
+//                                    }
+//
+//                                    @Override
+//                                    public void onResponse(Call call, Response response) throws IOException {
+//                                        String r = response.body().string();
+//                                    }
+//                                });
+//                            }
+//                        }
+//                    });
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
+//    }
 
-                                    @Override
-                                    public void onResponse(Call call, Response response) throws IOException {
-                                        String r = response.body().string();
-                                    }
-                                });
-                            }
-                        }
-                    });
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-    }
+
+    // Populate post views
+//    public void populatePostViews() {
+//        postViews.add((TextView) findViewById(R.id.post_item_1));
+//        postViews.add((TextView) findViewById(R.id.post_item_2));
+//        postViews.add((TextView) findViewById(R.id.post_item_3));
+//
+//        for(int i = 0; i < 3; i++) {
+//            postViews.get(i).setText(posts.get(i).toString());
+//        }
+//
+//        locationButtonEvents();
+//        commentButtonEvents();
+//    }
+
+
+    // Location Button Event Listeners
+//    public void locationButtonEvents() {
+//        for(int i = 0; i < 3; i++) {
+//            activityId = postIds.get(i);
+//            locationButtons.get(i).setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    try {
+//                        mAuthState.performActionWithFreshTokens(mAuthorizationService, new AuthState.AuthStateAction() {
+//                            @Override
+//                            public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException e) {
+//                                if (e == null) {
+//                                    mOkHttpClient = new OkHttpClient();
+//                                    HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/people/" + activityId + "/activities");
+//                                    HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/people/114062465972706991937/activities");
+//                                    reqUrl = reqUrl.newBuilder().addQueryParameter("key", "AIzaSyBjI0EQp8Og_X69WK3xYrIN8q2SPcX-hKo").build();
+//                                    MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+//                                String location_comment = "Hello from " + location.getLatitude() + ", " + location.getLongitude() = "!";
+//                                    String location_comment = "Hello from 44.5, -123.2!";
+//                                    String json = "{  \"object\": { \"originalContent\": \"" + location_comment + "\" }, \"access\": { \"domainRestricted\": true } }";
+//                                    RequestBody body = RequestBody.create(JSON, json);
+//                                    Request request = new Request.Builder()
+//                                            .url(reqUrl)
+//                                            .addHeader("Authorization", "Bearer " + accessToken)
+//                                            .post(body)
+//                                            .build();
+//                                    mOkHttpClient.newCall(request).enqueue(new Callback() {
+//                                        @Override
+//                                        public void onFailure(Call call, IOException e) {
+//                                            e.printStackTrace();
+//                                        }
+//
+//                                        @Override
+//                                        public void onResponse(Call call, Response response) throws IOException {
+//                                            String r = response.body().string();
+//                                        }
+//                                    });
+//                                }
+//                            }
+//                        });
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            });
+//        }
+//    }
+
+
+    // Comment Button Event Listeners
+//    public void commentButtonEvents() {
+//        commentLists.add((ListView) findViewById(R.id.comment_list_1));
+//        commentLists.add((ListView) findViewById(R.id.comment_list_2));
+//        commentLists.add((ListView) findViewById(R.id.comment_list_3));
+//
+//        for(int i = 0; i < 3; i++) {
+//            activityId = postIds.get(i);
+//            final ListView commentListView = commentLists.get(i);
+//            commentButtons.get(i).setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    try {
+//                        mAuthState.performActionWithFreshTokens(mAuthorizationService, new AuthState.AuthStateAction() {
+//                            @Override
+//                            public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException e) {
+//                                if (e == null) {
+//                                    mOkHttpClient = new OkHttpClient();
+//                                     HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/activities/" + activityId + "/comments");
+////                                    HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/activities/z12rsh3hyruvwpt1j22fspphauzptr3ds/comments");
+//                                    reqUrl = reqUrl.newBuilder().addQueryParameter("key", "AIzaSyBjI0EQp8Og_X69WK3xYrIN8q2SPcX-hKo").build();
+//                                    Request request = new Request.Builder()
+//                                            .url(reqUrl)
+//                                            .addHeader("Authorization", "Bearer " + accessToken)
+//                                            .build();
+//                                    mOkHttpClient.newCall(request).enqueue(new Callback() {
+//                                        @Override
+//                                        public void onFailure(Call call, IOException e) {
+//                                            e.printStackTrace();
+//                                        }
+//
+//                                        @Override
+//                                        public void onResponse(Call call, Response response) throws IOException {
+//                                            String r = response.body().string();
+////                                             DEBUG
+//                                            Log.d("COMMENT RESPONSE", r);
+//                                            try {
+//                                                JSONObject j = new JSONObject(r);
+//                                                JSONArray items = j.getJSONArray("items");
+//                                                List<Map<String, String>> comments = new ArrayList<Map<String, String>>();
+//                                                for(int i = 0; i < 3; i++) {
+//                                                    HashMap<String, String> c = new HashMap<String, String>();
+////                                                     DEBUG
+//                                                    Log.d("COMMENT", items.getJSONObject(i).getJSONObject("object").getString("originalContent"));
+//                                                    c.put("content", items.getJSONObject(i).getJSONObject("object").getString("originalContent"));
+//                                                    comments.add(c);
+//                                                }
+//                                                final SimpleAdapter commentAdapter = new SimpleAdapter(
+//                                                        APIActivity.this,
+//                                                        comments,
+//                                                        R.layout.comment_item,
+//                                                        new String[]{"originalContent"},
+//                                                        new int[]{R.id.comment_item_content});
+//                                                runOnUiThread(new Runnable() {
+//                                                    @Override
+//                                                    public void run() {
+//                                                        commentListView.setAdapter(commentAdapter);
+//                                                    }
+//                                                });
+//                                            } catch (JSONException e1) {
+//                                                e1.printStackTrace();
+//                                            }
+//                                        }
+//                                    });
+//                                }
+//                            }
+//                        });
+//                    } catch (Exception e){
+//                        e.printStackTrace();
+//                    }
+//                }
+//            });
+//        }
+//    }
 
 
         // View Location as Comment on Post
 //        private ArrayList<>
-
 
 
 //    public void viewCommentsOnClick(View v) {
@@ -335,7 +603,6 @@ public class APIActivity extends AppCompatActivity {
 //            e.printStackTrace();
 //        }
 //    }
-
 
 
 //        Button view_location_button = (Button) findViewById(R.id.button_view_comments);
@@ -403,7 +670,7 @@ public class APIActivity extends AppCompatActivity {
 //                }
 //            }
 //        });
-
+//    }
 
     @Override
     protected void onStart() {
