@@ -362,16 +362,20 @@ public class APIActivity extends AppCompatActivity implements
                         @Override
                         public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException e) {
                             if (e == null) {
+                                mAccessToken = auth.getAccessToken();
+                                mOkHttpClient = new OkHttpClient();
+                                boolean flag = false;
                                 for(int i = 0; i < circleNames.size(); i++) {
                                     Log.d("UPDATE NAME", circleNames.get(i));
                                     if(circleNameInput.equals(circleNames.get(i))){
+                                        flag = true;
                                         circleId = circleIds.get(i);
                                     }
-                                    else {
-                                        ((TextView) findViewById(R.id.invalid)).setText("That Circle doesn't exist.");
-                                    }
                                 }
-                                String updateUrl = "https://www.googleapis.com/plusDomains/v1/circles/" + circleId + "/people?userId=" + emailInput;
+                                if(!flag) {
+                                    ((TextView) findViewById(R.id.invalid)).setText("That Circle doesn't exist.");
+                                }
+                                String updateUrl = "https://www.googleapis.com/plusDomains/v1/circles/" + circleId + "/people?email=" + emailInput;
                                 Log.d("UPDATE URL", updateUrl);
                                 HttpUrl reqUrl = HttpUrl.parse(updateUrl);
                                 reqUrl = reqUrl.newBuilder().addQueryParameter("key", API_key).build();
@@ -390,57 +394,94 @@ public class APIActivity extends AppCompatActivity implements
                                     }
                                     @Override
                                     public void onResponse(Call call, Response response) throws IOException {
-                                        try {
                                         String r = response.body().string();
-                                        Log.d("UPDATE RESPONSE", r);
-                                        JSONObject j = new JSONObject(r);
-                                        circleId = j.getString("id");
-                                        String circlesUrl = "https://www.googleapis.com/plusDomains/v1/circles/" + circleId + "/people";
-                                        HttpUrl reqUrl = HttpUrl.parse(circlesUrl);
-                                        reqUrl = reqUrl.newBuilder().addQueryParameter("key", API_key).build();
-                                        Request request = new Request.Builder()
-                                                .url(reqUrl)
-                                                .addHeader("Authorization", "Bearer " + mAccessToken)
-                                                .build();
-                                        mOkHttpClient.newCall(request).enqueue(new Callback() {
-                                            @Override
-                                            public void onFailure(Call call, IOException e) {
-                                                e.printStackTrace();
-                                            }
-
-                                            @Override
-                                            public void onResponse(Call call, Response response) throws IOException {
-                                                String r = response.body().string();
-                                                Log.d("FRIENDS", r);
-                                                try {
-                                                    JSONObject j = new JSONObject(r);
-                                                    JSONArray items = j.getJSONArray("items");
-                                                    List<Map<String, String>> friends = new ArrayList<Map<String, String>>();
-                                                    for (int i = 0; i < items.length(); i++) {
-                                                        HashMap<String, String> m = new HashMap<String, String>();
-                                                        m.put("displayName", items.getJSONObject(i).getString("displayName"));
-                                                        friends.add(m);
-                                                    }
-                                                    final SimpleAdapter friendAdapter = new SimpleAdapter(
-                                                            APIActivity.this,
-                                                            friends,
-                                                            R.layout.circle_item,
-                                                            new String[]{"displayName"},
-                                                            new int[]{R.id.friend_item_displayName});
-                                                    runOnUiThread(new Runnable() {
-                                                        @Override
-                                                        public void run() {
-                                                            ((ListView) findViewById(R.id.friends_list)).setAdapter(friendAdapter);
-                                                        }
-                                                    });
-                                                } catch (JSONException e1) {
-                                                    e1.printStackTrace();
-                                                }
-                                            }
-                                        });
-                                    } catch (JSONException e1) {
-                                        e1.printStackTrace();
                                     }
+                                });
+                            }
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+
+        Button get_friends_button = (Button) findViewById(R.id.button_get_friends);
+        get_friends_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    mAuthState.performActionWithFreshTokens(mAuthorizationService, new AuthState.AuthStateAction() {
+                        @Override
+                        public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException e) {
+                            if (e == null) {
+                                mAccessToken = auth.getAccessToken();
+                                mOkHttpClient = new OkHttpClient();
+                                HttpUrl reqUrl = HttpUrl.parse("https://www.googleapis.com/plusDomains/v1/people/me/");
+                                reqUrl = reqUrl.newBuilder().addQueryParameter("key", API_key).build();
+                                Request request = new Request.Builder()
+                                        .url(reqUrl)
+                                        .addHeader("Authorization", "Bearer " + mAccessToken)
+                                        .build();
+                                mOkHttpClient.newCall(request).enqueue(new Callback() {
+                                    @Override
+                                    public void onFailure(Call call, IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                    @Override
+                                    public void onResponse(Call call, Response response) throws IOException {
+                                        String r = response.body().string();
+                                        try {
+                                            JSONObject j = new JSONObject(r);
+                                            userId = j.getString("id");
+                                            String friendsUrl = "https://www.googleapis.com/plusDomains/v1/circles/" + circleId + "/people";
+                                            Log.d("URL", friendsUrl);
+                                            HttpUrl reqUrl = HttpUrl.parse(friendsUrl);
+                                            reqUrl = reqUrl.newBuilder().addQueryParameter("key", API_key).build();
+                                            Request request = new Request.Builder()
+                                                    .url(reqUrl)
+                                                    .addHeader("Authorization", "Bearer " + mAccessToken)
+                                                    .build();
+                                            mOkHttpClient.newCall(request).enqueue(new Callback() {
+                                                @Override
+                                                public void onFailure(Call call, IOException e) {
+                                                    e.printStackTrace();
+                                                }
+
+                                                @Override
+                                                public void onResponse(Call call, Response response) throws IOException {
+                                                    String r = response.body().string();
+                                                    Log.d("FRIENDS", r);
+                                                    try {
+                                                        JSONObject j = new JSONObject(r);
+                                                        JSONArray items = j.getJSONArray("items");
+                                                        List<Map<String, String>> friends = new ArrayList<Map<String, String>>();
+                                                        for (int i = 0; i < items.length(); i++) {
+                                                            HashMap<String, String> m = new HashMap<String, String>();
+                                                            m.put("displayName", items.getJSONObject(i).getString("displayName"));
+                                                            friends.add(m);
+                                                        }
+                                                        final SimpleAdapter friendAdapter = new SimpleAdapter(
+                                                                APIActivity.this,
+                                                                friends,
+                                                                R.layout.friend_item,
+                                                                new String[]{"displayName"},
+                                                                new int[]{R.id.friend_item_displayName});
+                                                        runOnUiThread(new Runnable() {
+                                                            @Override
+                                                            public void run() {
+                                                                ((ListView) findViewById(R.id.friends_list)).setAdapter(friendAdapter);
+                                                            }
+                                                        });
+                                                    } catch (JSONException e1) {
+                                                        e1.printStackTrace();
+                                                    }
+                                                }
+                                            });
+                                        } catch (JSONException e1) {
+                                            e1.printStackTrace();
+                                        }
                                     }
                                 });
                             }
@@ -539,11 +580,7 @@ public class APIActivity extends AppCompatActivity implements
 
         AuthorizationServiceConfiguration config = new AuthorizationServiceConfiguration(authEndpoint, tokenEndpoint, null);
         AuthorizationRequest req = new AuthorizationRequest.Builder(config, client_ID, ResponseTypeValues.CODE, redirect)
-                .setScopes("https://www.googleapis.com/auth/plus.me",
-                        "https://www.googleapis.com/auth/plus.stream.read",
-                        "https://www.googleapis.com/auth/plus.stream.write",
-                        "https://www.googleapis.com/auth/plus.circles.read",
-                        "https://www.googleapis.com/auth/plus.circles.write")
+                .setScopes("https://www.googleapis.com/auth/plus.me", "https://www.googleapis.com/auth/plus.stream.read", "https://www.googleapis.com/auth/plus.stream.write", "https://www.googleapis.com/auth/plus.circles.read", "https://www.googleapis.com/auth/plus.circles.write")
                 .build();
 
         Intent authComplete = new Intent(this, AuthCompleteActivity.class);

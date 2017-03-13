@@ -14,7 +14,7 @@
         android:id="@+id/circle_item_displayName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="25sp" />
+        android:textSize="20sp" />
 
     <!--<TextView-->
         <!--android:id="@+id/circle_item_description"-->
