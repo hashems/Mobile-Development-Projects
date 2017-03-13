@@ -11,15 +11,8 @@
     tools:context="hashems.project.APIActivity">
 
     <TextView
-        android:id="@+id/circle_item_displayName"
+        android:id="@+id/friend_item_displayName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="25sp" />
-
-    <!--<TextView-->
-        <!--android:id="@+id/circle_item_description"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_below="@+id/circle_item_displayName"-->
-        <!--android:textSize="15sp" />-->
 </RelativeLayout>

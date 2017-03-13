@@ -37,7 +37,7 @@
         <ListView
             android:id="@+id/posts_list"
             android:layout_width="match_parent"
-            android:layout_height="100sp"
+            android:layout_height="75sp"
             android:layout_below="@+id/button_get_posts" />
 
         <Button
@@ -54,7 +54,7 @@
         <ListView
             android:id="@+id/circles_list"
             android:layout_width="match_parent"
-            android:layout_height="100dp"
+            android:layout_height="75dp"
             android:layout_below="@+id/button_get_circles" />
 
         <EditText
@@ -66,31 +66,37 @@
             android:hint="Circle Name" />
 
         <EditText
-            android:id="@+id/input_circle_description"
+            android:id="@+id/input_email"
             android:textSize="30sp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/input_circle_name"
-            android:hint="Circle Description" />
+            android:hint="Email Address" />
 
         <TextView
             android:id="@+id/invalid"
-            android:textSize="30sp"
+            android:textSize="25sp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/input_circle_description" />
+            android:layout_below="@id/input_email" />
 
         <Button
-            android:id="@+id/button_update_circle"
+            android:id="@+id/button_add_friend"
             android:layout_width="wrap_content"
             android:layout_height="30sp"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
-            android:layout_alignParentBottom="true"
+            android:layout_below="@id/invalid"
             android:textSize="20sp"
             android:background="@color/colorButtonSubmit"
             android:textColor="@color/colorPrimaryText"
-            android:text="Update Circle" />
+            android:text="Add" />
+
+        <ListView
+            android:id="@+id/friends_list"
+            android:layout_width="match_parent"
+            android:layout_height="75dp"
+            android:layout_below="@+id/button_add_friend" />
 
         <Button
             android:id="@+id/logout"

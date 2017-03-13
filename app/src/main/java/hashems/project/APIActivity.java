@@ -90,6 +90,7 @@ public class APIActivity extends AppCompatActivity implements
 
     private List<String> circleNames = new ArrayList<String>();
     private List<String> circleIds = new ArrayList<String>();
+    private String circleId = "";
 
     private String location_post = "";
 
@@ -310,7 +311,7 @@ public class APIActivity extends AppCompatActivity implements
                                                         for (int i = 0; i < items.length(); i++) {
                                                             HashMap<String, String> m = new HashMap<String, String>();
                                                             m.put("displayName", items.getJSONObject(i).getString("displayName"));
-                                                            m.put("description", items.getJSONObject(i).getString("description"));
+//                                                            m.put("description", items.getJSONObject(i).getString("description"));
                                                             circles.add(m);
                                                             circleNames.add(items.getJSONObject(i).getString("displayName"));
                                                             circleIds.add(items.getJSONObject(i).getString("id"));
@@ -319,8 +320,10 @@ public class APIActivity extends AppCompatActivity implements
                                                                 APIActivity.this,
                                                                 circles,
                                                                 R.layout.circle_item,
-                                                                new String[]{"displayName", "description"},
-                                                                new int[]{R.id.circle_item_displayName, R.id.circle_item_description});
+                                                                new String[]{"displayName"},
+                                                                new int[]{R.id.circle_item_displayName});
+//                                                                new String[]{"displayName", "description"},
+//                                                                new int[]{R.id.circle_item_displayName, R.id.circle_item_description});
                                                         runOnUiThread(new Runnable() {
                                                             @Override
                                                             public void run() {
@@ -347,20 +350,20 @@ public class APIActivity extends AppCompatActivity implements
         });
 
 
-        Button update_circle_button = (Button) findViewById(R.id.button_update_circle);
+        Button update_circle_button = (Button) findViewById(R.id.button_add_friend);
         update_circle_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 try {
                     final String circleNameInput = ((EditText) findViewById(R.id.input_circle_name)).getText().toString();
-                    final String circleDescriptionInput = ((EditText) findViewById(R.id.input_circle_description)).getText().toString();
+                    final String emailInput = ((EditText) findViewById(R.id.input_email)).getText().toString();
 
                     mAuthState.performActionWithFreshTokens(mAuthorizationService, new AuthState.AuthStateAction() {
                         @Override
                         public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException e) {
                             if (e == null) {
-                                String circleId = "";
                                 for(int i = 0; i < circleNames.size(); i++) {
+                                    Log.d("UPDATE NAME", circleNames.get(i));
                                     if(circleNameInput.equals(circleNames.get(i))){
                                         circleId = circleIds.get(i);
                                     }
@@ -368,12 +371,12 @@ public class APIActivity extends AppCompatActivity implements
                                         ((TextView) findViewById(R.id.invalid)).setText("That Circle doesn't exist.");
                                     }
                                 }
-                                String updateUrl = "https://www.googleapis.com/plusDomains/v1/circles/" + circleId;
+                                String updateUrl = "https://www.googleapis.com/plusDomains/v1/circles/" + circleId + "/people?userId=" + emailInput;
                                 Log.d("UPDATE URL", updateUrl);
                                 HttpUrl reqUrl = HttpUrl.parse(updateUrl);
                                 reqUrl = reqUrl.newBuilder().addQueryParameter("key", API_key).build();
                                 MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-                                String json = "{  \"object\": { \"description\": \"" + circleDescriptionInput + "\" } }";
+                                String json = "";
                                 RequestBody body = RequestBody.create(JSON, json);
                                 Request request = new Request.Builder()
                                         .url(reqUrl)
@@ -387,8 +390,57 @@ public class APIActivity extends AppCompatActivity implements
                                     }
                                     @Override
                                     public void onResponse(Call call, Response response) throws IOException {
+                                        try {
                                         String r = response.body().string();
                                         Log.d("UPDATE RESPONSE", r);
+                                        JSONObject j = new JSONObject(r);
+                                        circleId = j.getString("id");
+                                        String circlesUrl = "https://www.googleapis.com/plusDomains/v1/circles/" + circleId + "/people";
+                                        HttpUrl reqUrl = HttpUrl.parse(circlesUrl);
+                                        reqUrl = reqUrl.newBuilder().addQueryParameter("key", API_key).build();
+                                        Request request = new Request.Builder()
+                                                .url(reqUrl)
+                                                .addHeader("Authorization", "Bearer " + mAccessToken)
+                                                .build();
+                                        mOkHttpClient.newCall(request).enqueue(new Callback() {
+                                            @Override
+                                            public void onFailure(Call call, IOException e) {
+                                                e.printStackTrace();
+                                            }
+
+                                            @Override
+                                            public void onResponse(Call call, Response response) throws IOException {
+                                                String r = response.body().string();
+                                                Log.d("FRIENDS", r);
+                                                try {
+                                                    JSONObject j = new JSONObject(r);
+                                                    JSONArray items = j.getJSONArray("items");
+                                                    List<Map<String, String>> friends = new ArrayList<Map<String, String>>();
+                                                    for (int i = 0; i < items.length(); i++) {
+                                                        HashMap<String, String> m = new HashMap<String, String>();
+                                                        m.put("displayName", items.getJSONObject(i).getString("displayName"));
+                                                        friends.add(m);
+                                                    }
+                                                    final SimpleAdapter friendAdapter = new SimpleAdapter(
+                                                            APIActivity.this,
+                                                            friends,
+                                                            R.layout.circle_item,
+                                                            new String[]{"displayName"},
+                                                            new int[]{R.id.friend_item_displayName});
+                                                    runOnUiThread(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            ((ListView) findViewById(R.id.friends_list)).setAdapter(friendAdapter);
+                                                        }
+                                                    });
+                                                } catch (JSONException e1) {
+                                                    e1.printStackTrace();
+                                                }
+                                            }
+                                        });
+                                    } catch (JSONException e1) {
+                                        e1.printStackTrace();
+                                    }
                                     }
                                 });
                             }
