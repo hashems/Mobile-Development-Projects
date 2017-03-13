@@ -8,8 +8,6 @@ package hashems.project;
 
 import android.app.Dialog;
 import android.app.PendingIntent;
-import android.content.ClipData;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -21,11 +19,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -37,7 +31,6 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.vision.text.Text;
 
 import net.openid.appauth.AuthState;
 import net.openid.appauth.AuthorizationException;
@@ -76,6 +69,7 @@ public class APIActivity extends AppCompatActivity implements
     private String client_ID = "234170585101-i50nt19hn2bqn8j02j0738dbtig6ne0i.apps.googleusercontent.com";
     private String userId;
 
+    private SharedPreferences authPreference;
     private AuthorizationService mAuthorizationService;
     private AuthState mAuthState;
     private AuthState auth = null;
@@ -98,7 +92,8 @@ public class APIActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        SharedPreferences authPreference = getSharedPreferences("auth", MODE_PRIVATE);
+//        SharedPreferences authPreference = getSharedPreferences("auth", MODE_PRIVATE);
+        authPreference = getSharedPreferences("auth", MODE_PRIVATE);
         setContentView(R.layout.activity_api);
         mAuthorizationService = new AuthorizationService(this);
 
@@ -129,6 +124,7 @@ public class APIActivity extends AppCompatActivity implements
                 }
             }
         };
+
 
 
         // Add Google+ Posts with Location Data
@@ -311,7 +307,6 @@ public class APIActivity extends AppCompatActivity implements
                                                         for (int i = 0; i < items.length(); i++) {
                                                             HashMap<String, String> m = new HashMap<String, String>();
                                                             m.put("displayName", items.getJSONObject(i).getString("displayName"));
-//                                                            m.put("description", items.getJSONObject(i).getString("description"));
                                                             circles.add(m);
                                                             circleNames.add(items.getJSONObject(i).getString("displayName"));
                                                             circleIds.add(items.getJSONObject(i).getString("id"));
@@ -322,8 +317,6 @@ public class APIActivity extends AppCompatActivity implements
                                                                 R.layout.circle_item,
                                                                 new String[]{"displayName"},
                                                                 new int[]{R.id.circle_item_displayName});
-//                                                                new String[]{"displayName", "description"},
-//                                                                new int[]{R.id.circle_item_displayName, R.id.circle_item_description});
                                                         runOnUiThread(new Runnable() {
                                                             @Override
                                                             public void run() {
@@ -350,6 +343,7 @@ public class APIActivity extends AppCompatActivity implements
         });
 
 
+        // Edit Google+ Circles
         Button update_circle_button = (Button) findViewById(R.id.button_add_friend);
         update_circle_button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -385,7 +379,7 @@ public class APIActivity extends AppCompatActivity implements
                                 Request request = new Request.Builder()
                                         .url(reqUrl)
                                         .addHeader("Authorization", "Bearer " + mAccessToken)
-                                        .post(body)
+                                        .put(body)
                                         .build();
                                 mOkHttpClient.newCall(request).enqueue(new Callback() {
                                     @Override
@@ -407,6 +401,7 @@ public class APIActivity extends AppCompatActivity implements
         });
 
 
+        // View Google+ Circle Friends
         Button get_friends_button = (Button) findViewById(R.id.button_get_friends);
         get_friends_button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -492,6 +487,22 @@ public class APIActivity extends AppCompatActivity implements
                 }
             }
         });
+
+
+        // Logout
+        Button logout_button = (Button) findViewById(R.id.logout);
+        logout_button.setOnClickListener(new View.OnClickListener() {
+             @Override
+             public void onClick(View v) {
+                 try {
+                     logout();
+                     Intent logoutIntent = new Intent(Intent.ACTION_VIEW,Uri.parse("https://google.com/accounts/Logout"));
+                     startActivity(logoutIntent);
+                 } catch (RuntimeException ex) {
+                     Log.e("EXCEPT", ex.toString());
+                 }
+             }
+        });
     }
 
 
@@ -508,6 +519,10 @@ public class APIActivity extends AppCompatActivity implements
     protected void onStop() {
         mGoogleApiClient.disconnect();
         super.onStop();
+    }
+
+    public void logout() {
+        authPreference.edit().clear().commit();
     }
 
     @Override
