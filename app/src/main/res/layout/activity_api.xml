@@ -49,7 +49,7 @@
             android:layout_margin="5dp"
             android:background="@color/colorButton"
             android:textColor="@color/colorPrimaryText"
-            android:text="Get Circles" />
+            android:text="@string/get_circles" />
 
         <ListView
             android:id="@+id/circles_list"
@@ -63,7 +63,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/circles_list"
-            android:hint="Circle Name" />
+            android:hint="@string/circle_name_hint" />
 
         <EditText
             android:id="@+id/input_email"
@@ -71,7 +71,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/input_circle_name"
-            android:hint="Email Address" />
+            android:hint="@string/email_hint"
+            android:inputType="textEmailAddress" />
 
         <TextView
             android:id="@+id/invalid"
@@ -90,7 +91,7 @@
             android:textSize="20sp"
             android:background="@color/colorButtonSubmit"
             android:textColor="@color/colorPrimaryText"
-            android:text="Add" />
+            android:text="@string/add_friend" />
 
         <Button
             android:id="@+id/button_get_friends"
@@ -102,7 +103,7 @@
             android:textSize="20sp"
             android:background="@color/colorButton"
             android:textColor="@color/colorPrimaryText"
-            android:text="Get Friends" />
+            android:text="@string/get_friends" />
 
         <ListView
             android:id="@+id/friends_list"
@@ -120,5 +121,5 @@
             android:textSize="20sp"
             android:background="@color/colorButtonLogout"
             android:textColor="@color/colorPrimaryText"
-            android:text="Logout" />
+            android:text="@string/logout" />
 </RelativeLayout>

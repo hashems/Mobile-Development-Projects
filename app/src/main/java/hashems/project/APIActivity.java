@@ -92,7 +92,6 @@ public class APIActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        SharedPreferences authPreference = getSharedPreferences("auth", MODE_PRIVATE);
         authPreference = getSharedPreferences("auth", MODE_PRIVATE);
         setContentView(R.layout.activity_api);
         mAuthorizationService = new AuthorizationService(this);
@@ -154,6 +153,7 @@ public class APIActivity extends AppCompatActivity implements
                                     public void onResponse(Call call, Response response) throws IOException {
                                         String r = response.body().string();
                                         try {
+                                            // Get user id
                                             JSONObject j = new JSONObject(r);
                                             userId = j.getString("id");
                                             String circlesUrl = "https://www.googleapis.com/plusDomains/v1/people/" + userId + "/activities";
@@ -281,6 +281,7 @@ public class APIActivity extends AppCompatActivity implements
                                     public void onResponse(Call call, Response response) throws IOException {
                                         String r = response.body().string();
                                         try {
+                                            // Get user id
                                             JSONObject j = new JSONObject(r);
                                             userId = j.getString("id");
                                             String circlesUrl = "https://www.googleapis.com/plusDomains/v1/people/" + userId + "/circles";
@@ -358,6 +359,8 @@ public class APIActivity extends AppCompatActivity implements
                             if (e == null) {
                                 mAccessToken = auth.getAccessToken();
                                 mOkHttpClient = new OkHttpClient();
+
+                                // Find circle id based on user input
                                 boolean flag = false;
                                 for(int i = 0; i < circleNames.size(); i++) {
                                     Log.d("UPDATE NAME", circleNames.get(i));
@@ -367,8 +370,9 @@ public class APIActivity extends AppCompatActivity implements
                                     }
                                 }
                                 if(!flag) {
-                                    ((TextView) findViewById(R.id.invalid)).setText("That Circle doesn't exist.");
+                                    ((TextView) findViewById(R.id.invalid)).setText(R.string.invalid_circle_name);
                                 }
+
                                 String updateUrl = "https://www.googleapis.com/plusDomains/v1/circles/" + circleId + "/people?email=" + emailInput;
                                 Log.d("UPDATE URL", updateUrl);
                                 HttpUrl reqUrl = HttpUrl.parse(updateUrl);
@@ -496,8 +500,8 @@ public class APIActivity extends AppCompatActivity implements
              public void onClick(View v) {
                  try {
                      logout();
-                     Intent logoutIntent = new Intent(Intent.ACTION_VIEW,Uri.parse("https://google.com/accounts/Logout"));
-                     startActivity(logoutIntent);
+                     Intent intent = new Intent(APIActivity.this, MainActivity.class);
+                     startActivity(intent);
                  } catch (RuntimeException ex) {
                      Log.e("EXCEPT", ex.toString());
                  }
@@ -510,8 +514,8 @@ public class APIActivity extends AppCompatActivity implements
     // Location stuff
     @Override
     protected void onStart() {
-        mGoogleApiClient.connect();
         mAuthState = getOrCreateAuthState();
+        mGoogleApiClient.connect();
         super.onStart();
     }
 
@@ -530,6 +534,8 @@ public class APIActivity extends AppCompatActivity implements
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION_RESULT);
+
+            location_post = "Hello from... Mars? No location permissions granted!";
             return;
         }
 
