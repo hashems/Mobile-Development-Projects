@@ -153,8 +153,8 @@ public class APIActivity extends AppCompatActivity implements
                                     public void onResponse(Call call, Response response) throws IOException {
                                         String r = response.body().string();
                                         try {
-                                            // Get user id
                                             JSONObject j = new JSONObject(r);
+                                            // Get user id
                                             userId = j.getString("id");
                                             String circlesUrl = "https://www.googleapis.com/plusDomains/v1/people/" + userId + "/activities";
                                             HttpUrl reqUrl = HttpUrl.parse(circlesUrl);
@@ -281,8 +281,8 @@ public class APIActivity extends AppCompatActivity implements
                                     public void onResponse(Call call, Response response) throws IOException {
                                         String r = response.body().string();
                                         try {
-                                            // Get user id
                                             JSONObject j = new JSONObject(r);
+                                            // Get user id
                                             userId = j.getString("id");
                                             String circlesUrl = "https://www.googleapis.com/plusDomains/v1/people/" + userId + "/circles";
                                             HttpUrl reqUrl = HttpUrl.parse(circlesUrl);
@@ -360,7 +360,7 @@ public class APIActivity extends AppCompatActivity implements
                                 mAccessToken = auth.getAccessToken();
                                 mOkHttpClient = new OkHttpClient();
 
-                                // Find circle id based on user input
+                                // Find Circle id based on Circle name input by user
                                 boolean flag = false;
                                 for(int i = 0; i < circleNames.size(); i++) {
                                     Log.d("UPDATE NAME", circleNames.get(i));
@@ -370,6 +370,7 @@ public class APIActivity extends AppCompatActivity implements
                                     }
                                 }
                                 if(!flag) {
+                                    // Print lookup error
                                     ((TextView) findViewById(R.id.invalid)).setText(R.string.invalid_circle_name);
                                 }
 
@@ -433,7 +434,6 @@ public class APIActivity extends AppCompatActivity implements
                                         String r = response.body().string();
                                         try {
                                             JSONObject j = new JSONObject(r);
-                                            userId = j.getString("id");
                                             String friendsUrl = "https://www.googleapis.com/plusDomains/v1/circles/" + circleId + "/people";
                                             Log.d("URL", friendsUrl);
                                             HttpUrl reqUrl = HttpUrl.parse(friendsUrl);
